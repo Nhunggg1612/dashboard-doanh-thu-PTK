@@ -58,6 +58,8 @@ jobs:
             "ggthemes",
             "ggiraph",
             "highcharter",
+            "formattable",
+            "scales",
             "crosstalk",
             "reactable",
             "DT",
