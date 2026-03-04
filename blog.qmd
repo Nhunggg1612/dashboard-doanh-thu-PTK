@@ -132,12 +132,36 @@ b2c_aio1 %>%
 ```{r,out.width = '120%',fig.width=7, fig.height=4, echo = FALSE, warning=FALSE, message=FALSE}
 highchart() %>% 
   hc_chart(type = "column") %>%
-  hc_xAxis(categories = bc_dk_dt$ma_tinh, labels = list(style=list(fontSize = "12px",fontFamily = "cambria"))) %>%
+  hc_xAxis(categories = bc_dk_dt$ma_tinh, labels = list(style=list(fontSize = "12px",fontFamily = "cambria")),
+           crosshair = list(
+    width = 40,              # độ rộng vùng highlight
+    color = "rgba(180,180,180,0.2)",  # màu xám nhạt trong suốt
+    zIndex = 0              # nằm dưới các bar
+  )) %>%
   hc_title(text = "Tỷ lệ dự kiến doanh thu tháng hiện tại",
            margin = 20, 
            align = "center",
            style = list(color = "black", fontWeight = "bold",fontFamily = "cambria",fontSize = "20px")
            ) %>% 
+  hc_plotOptions(
+  column = list(
+    states = list(
+      hover = list(
+        color = NULL  # để override màu theo từng series
+      ),
+      inactive = list(
+        opacity = 0.3
+      )
+    )
+  ),
+  series = list(
+    states = list(
+      inactive = list(
+        opacity = 0.3
+      )
+    )
+  )
+) %>%
   hc_yAxis_multiples(list(lineWidth = 3, 
                           title = list(text = "Dự kiến DT", style=list(fontWeight = "bold",fontSize = "15px",fontFamily = "cambria")), 
                           labels = list(style=list(fontSize = "12px",fontFamily = "cambria"))),
@@ -145,8 +169,14 @@ highchart() %>%
                           title = list(text = "%HT", style=list(fontWeight = "bold",fontSize = "15px",fontFamily = "cambria")), 
                           labels = list(style=list(fontSize = "12px",fontFamily = "cambria")))) %>%
   hc_add_series(name = "Tổng DT dự kiến", data = round(bc_dk_dt$gtri_dk,0),
+                states = list(
+      hover = list(color = "#808080")  # trắng khi hover
+    ),
                 tooltip = list(columnFormat = paste0("Dự kiến", "\n",accounting(bc_dk_dt$gtri_hd, big.mark = ",", digits = 2L, format = "d"), "TTQH"))) %>%
-  hc_add_series(name = "Đã lên DT",data = round(bc_dk_dt$gtri_dt,0)) %>%
+  hc_add_series(name = "Đã lên DT",data = round(bc_dk_dt$gtri_dt,0),
+                states = list(
+      hover = list(color = "#8DB600")  # xanh lá mạ khi hover
+    )) %>%
   hc_add_series(name = "Tỷ lệ (%)",data = round(bc_dk_dt$ty_le,0), type = "spline", yAxis = 1,dataLabels = list(enabled = TRUE, format = "{y}%")) %>%
   hc_tooltip(shared = TRUE,  # ← hiển thị tất cả series tại point đó
               headerFormat = "<b>{point.key}</b><br>",
