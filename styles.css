@@ -1,22 +1,22 @@
 /* ===== VARIABLES ===== */
-:root {
-  --accent: #00d1b2;
-  --text: #f8f9fa;
+:root {  /* Dùng :root để định nghĩa biến toàn cục — thay đổi 1 chỗ, áp dụng khắp nơi.*/
+  --accent: #00d1b2; /* Màu xanh teal - dùng cho các điểm nhấn */
+  --text: #f8f9fa; /* Màu chữ trắng ngà - text chính */
 
   /* Dark navy palette - match VN Credit screenshot */
-  --bg-body:       #0d1117;
-  --bg-navbar:     #111827;
-  --bg-navbar-alt: #161f2e;
-  --nav-active-bg: linear-gradient(135deg, #3b2f7a 0%, #2d1f6e 100%);
-  --nav-active-border: #6c5ce7;
-  --nav-hover-bg:  rgba(108, 92, 231, 0.12);
-  --nav-text:      #9ca3af;
-  --nav-text-active: #f8f9fa;
-  --sidebar-width: 220px;
+  --bg-body:       #f8f9fa; /* Nền trang - đen navy đậm (như GitHub dark) */
+  --bg-navbar:     #111827; /* Nền navbar - tối hơn body một chút */
+  --bg-navbar-alt: #161f2e; /* Nền dropdown - xanh navy đậm */
+  --nav-active-bg: linear-gradient(135deg, #3b2f7a 0%, #2d1f6e 100%); /* Gradient tím cho tab đang active */
+  --nav-active-border: #6c5ce7; /* Viền tím sáng cho tab active */
+  --nav-hover-bg:  rgba(108, 92, 231, 0.12); /* Nền tím mờ khi hover */
+  --nav-text:      #9ca3af; /* Màu chữ nav bình thường - xám nhạt */
+  --nav-text-active: #f8f9fa; /* Màu chữ nav khi active - trắng */
+  --sidebar-width: 220px; /* Độ rộng sidebar (khai báo sẵn để dùng sau) */
 }
 
 /* ===== RESET & BODY ===== */
-*, *::before, *::after { box-sizing: border-box; }
+*, *::before, *::after { box-sizing: border-box; } /* Mọi element tính kích thước bao gồm padding + border — tránh bị vỡ layout. */
 
 body {
   font-family: "Segoe UI", system-ui, -apple-system, Roboto, "Helvetica Neue", Arial, sans-serif;
