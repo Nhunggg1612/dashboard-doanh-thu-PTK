@@ -1,41 +1,113 @@
-:root{ --accent:#00d1b2; --text:#f8f9fa; }
-body{ font-family:system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial; color:#222; margin:0; }
+/* ===== VARIABLES ===== */
+:root {
+  --accent: #00d1b2;
+  --text: #f8f9fa;
 
-/* HERO COVER */
-.hero{ position:relative; height:100vh; background:url('images/hero-bg.jpg') center/cover no-repeat fixed;
-  display:flex; align-items:center; justify-content:center; text-align:center; overflow:hidden; }
-.hero::before{ content:""; position:absolute; inset:0; background:rgba(0,0,0,.45); }
-.hero-inner{ position:relative; z-index:1; color:var(--text); padding:2rem; }
-.hero h1{ font-size:clamp(2.8rem,7vw,6rem); letter-spacing:.08em; font-weight:900; margin:0 0 .5rem 0; text-transform:uppercase; }
-.hero .subtitle{ font-size:clamp(1rem,2.5vw,1.4rem); opacity:.9; font-style:italic; margin-bottom:1.25rem; }
-.cta{ display:flex; gap:1rem; justify-content:center; flex-wrap:wrap; }
-.btn{ display:inline-block; padding:.7rem 1.1rem; border-radius:999px; text-decoration:none; font-weight:600; }
-.btn-primary{ background:var(--accent); color:#002b36; }
-.btn-outline{ border:2px solid var(--text); color:var(--text); }
-.scroll-down{ position:absolute; bottom:20px; left:50%; transform:translateX(-50%); font-size:2rem; color:#fff; z-index:1;
-  animation:bounce 2s infinite; }
-@keyframes bounce{ 0%,20%,50%,80%,100%{transform:translateX(-50%) translateY(0);} 40%{transform:translateX(-50%) translateY(-10px);}
-  60%{transform:translateX(-50%) translateY(-5px);} }
+  /* Dark navy palette - match VN Credit screenshot */
+  --bg-body:       #0d1117;
+  --bg-navbar:     #111827;
+  --bg-navbar-alt: #161f2e;
+  --nav-active-bg: linear-gradient(135deg, #3b2f7a 0%, #2d1f6e 100%);
+  --nav-active-border: #6c5ce7;
+  --nav-hover-bg:  rgba(108, 92, 231, 0.12);
+  --nav-text:      #9ca3af;
+  --nav-text-active: #f8f9fa;
+  --sidebar-width: 220px;
+}
+
+/* ===== RESET & BODY ===== */
+*, *::before, *::after { box-sizing: border-box; }
+
+body {
+  font-family: "Segoe UI", system-ui, -apple-system, Roboto, "Helvetica Neue", Arial, sans-serif;
+  background: var(--bg-body);
+  color: var(--text);
+  margin: 0;
+  min-height: 100vh;
+}
+
+/* ===== HERO COVER ===== */
+.hero {
+  position: relative;
+  height: 100vh;
+  background: url('images/hero-bg.jpg') center/cover no-repeat fixed;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  overflow: hidden;
+}
+.hero::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, .45);
+}
+.hero-inner {
+  position: relative;
+  z-index: 1;
+  color: var(--text);
+  padding: 2rem;
+}
+.hero h1 {
+  font-size: clamp(2.8rem, 7vw, 6rem);
+  letter-spacing: .08em;
+  font-weight: 900;
+  margin: 0 0 .5rem 0;
+  text-transform: uppercase;
+}
+.hero .subtitle {
+  font-size: clamp(1rem, 2.5vw, 1.4rem);
+  opacity: .9;
+  font-style: italic;
+  margin-bottom: 1.25rem;
+}
+.cta {
+  display: flex;
+  gap: 1rem;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+.btn {
+  display: inline-block;
+  padding: .7rem 1.1rem;
+  border-radius: 999px;
+  text-decoration: none;
+  font-weight: 600;
+}
+.btn-primary  { background: var(--accent); color: #002b36; }
+.btn-outline  { border: 2px solid var(--text); color: var(--text); }
+
+.scroll-down {
+  position: absolute;
+  bottom: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 2rem;
+  color: #fff;
+  z-index: 1;
+  animation: bounce 2s infinite;
+}
+@keyframes bounce {
+  0%,20%,50%,80%,100% { transform: translateX(-50%) translateY(0); }
+  40%                  { transform: translateX(-50%) translateY(-10px); }
+  60%                  { transform: translateX(-50%) translateY(-5px); }
+}
+
 /* =====================================
    QUARTO + REACTABLE FULL WIDTH FIX
    ===================================== */
-
-/* Khung trang */
 .page {
   max-width: 85vw !important;
   margin-left: auto !important;
   margin-right: auto !important;
 }
-
-/* Gỡ layout cột của Quarto */
 .page-columns,
 .page-full,
 .content {
   max-width: 100% !important;
   width: 100% !important;
 }
-
-/* Output chunk */
 .cell-output,
 .cell-output-display {
   width: 100% !important;
@@ -44,56 +116,121 @@ body{ font-family:system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Ari
 }
 
 /* ===== REACTABLE FIX ===== */
-
-/* Gỡ scroll ngang mặc định */
-.reactable {
-  width: 100% !important;
-}
-
-.reactable .rt-table {
-  width: 100% !important;
-  table-layout: auto !important;
-}
-
-.reactable .rt-table-container {
-  overflow-x: visible !important;
-}
-
-/* Header + body cùng width */
+.reactable                      { width: 100% !important; }
+.reactable .rt-table            { width: 100% !important; table-layout: auto !important; }
+.reactable .rt-table-container  { overflow-x: visible !important; }
 .reactable .rt-thead,
-.reactable .rt-tbody {
-  width: 100% !important;
-}
-
-/* Tránh clip cell */
+.reactable .rt-tbody            { width: 100% !important; }
 .reactable .rt-td,
-.reactable .rt-th {
-  white-space: normal !important;
+.reactable .rt-th               { white-space: normal !important; }
+
+/* =============================================
+   NAVBAR - DARK FINTECH STYLE (VN Credit look)
+   ============================================= */
+
+/* --- Toàn bộ navbar bar --- */
+.navbar,
+.quarto-navbar,
+nav.navbar {
+  background: var(--bg-navbar) !important;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06) !important;
+  box-shadow: 0 2px 20px rgba(0, 0, 0, 0.4) !important;
+  padding: 0.5rem 1.5rem !important;
 }
 
-/* ===== CẤU HÌNH GIAO DIỆN NAVBAR ===== */
-.navbar-nav .nav-link.active,
-.navbar-nav .nav-item.active .nav-link {
-  background: transparent !important;
-  border: 2px solid var(--accent) !important;
-  border-radius: 8px !important;
-  color: var(--accent) !important;
-  padding: 6px 14px !important;
-  font-weight: 600 !important;
+/* Brand / logo text */
+.navbar-brand,
+.navbar-brand:hover {
+  color: var(--text) !important;
+  font-weight: 700 !important;
+  font-size: 1.1rem !important;
+  letter-spacing: 0.03em !important;
 }
 
-/* Hover effect cho các tab khác */
-.navbar-nav .nav-link:hover {
-  border: 2px solid rgba(0, 209, 178, 0.4) !important;
-  border-radius: 8px !important;
-  padding: 6px 14px !important;
-  color: var(--accent) !important;
-}
-
-/* Giữ padding đồng đều cho tất cả nav-link */
+/* --- Base nav-link --- */
 .navbar-nav .nav-link {
+  color: var(--nav-text) !important;
   border: 2px solid transparent !important;
-  border-radius: 8px !important;
-  padding: 6px 14px !important;
+  border-radius: 10px !important;
+  padding: 7px 14px !important;
+  margin: 2px 3px !important;
+  font-size: 0.9rem !important;
+  font-weight: 500 !important;
   transition: all 0.2s ease !important;
+  display: flex !important;
+  align-items: center !important;
+  gap: 8px !important;
+}
+
+/* --- Hover state --- */
+.navbar-nav .nav-link:hover {
+  background: var(--nav-hover-bg) !important;
+  border-color: rgba(108, 92, 231, 0.35) !important;
+  color: var(--nav-text-active) !important;
+}
+
+/* --- Active / current page --- */
+.navbar-nav .nav-link.active,
+.navbar-nav .nav-item.active .nav-link,
+.navbar-nav .nav-link[aria-current="page"] {
+  background: var(--nav-active-bg) !important;
+  border-color: var(--nav-active-border) !important;
+  color: var(--nav-text-active) !important;
+  font-weight: 600 !important;
+  box-shadow: 0 0 16px rgba(108, 92, 231, 0.35) !important;
+}
+
+/* --- Toggler (mobile) --- */
+.navbar-toggler {
+  border-color: rgba(255,255,255,0.2) !important;
+}
+.navbar-toggler-icon {
+  filter: invert(1) !important;
+}
+
+/* --- Dropdown menu (nếu có) --- */
+.dropdown-menu {
+  background: var(--bg-navbar-alt) !important;
+  border: 1px solid rgba(108, 92, 231, 0.3) !important;
+  border-radius: 12px !important;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.5) !important;
+  padding: 6px !important;
+}
+.dropdown-item {
+  color: var(--nav-text) !important;
+  border-radius: 8px !important;
+  padding: 8px 14px !important;
+  font-size: 0.88rem !important;
+  transition: all 0.15s ease !important;
+}
+.dropdown-item:hover,
+.dropdown-item:focus {
+  background: var(--nav-hover-bg) !important;
+  color: var(--nav-text-active) !important;
+}
+
+/* ===== SIDEBAR NAVBAR (nếu dùng Quarto sidebar) ===== */
+.sidebar-navigation,
+#quarto-sidebar {
+  background: var(--bg-navbar) !important;
+  border-right: 1px solid rgba(255,255,255,0.06) !important;
+  min-height: 100vh !important;
+}
+
+.sidebar-navigation .sidebar-item-text,
+#quarto-sidebar .sidebar-item-text {
+  color: var(--nav-text) !important;
+  font-size: 0.9rem !important;
+}
+
+.sidebar-navigation .sidebar-item.active > .sidebar-item-container,
+#quarto-sidebar .sidebar-item.active > .sidebar-item-container {
+  background: var(--nav-active-bg) !important;
+  border-radius: 10px !important;
+  border-left: 3px solid var(--nav-active-border) !important;
+}
+.sidebar-navigation .sidebar-item.active .sidebar-item-text,
+#quarto-sidebar .sidebar-item.active .sidebar-item-text {
+  color: var(--nav-text-active) !important;
+  font-weight: 600 !important;
 }
