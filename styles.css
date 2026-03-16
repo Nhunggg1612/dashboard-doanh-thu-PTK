@@ -10,7 +10,7 @@
   --nav-active-bg: linear-gradient(135deg, #3b2f7a 0%, #2d1f6e 100%); /* Gradient tím cho tab đang active */
   --nav-active-border: #6c5ce7; /* Viền tím sáng cho tab active */
   --nav-hover-bg:  rgba(108, 92, 231, 0.12); /* Nền tím mờ khi hover */
-  --nav-text:      #9ca3af; /* Màu chữ nav bình thường - xám nhạt */
+  --nav-text:      #f8f9fa; /* Màu chữ nav bình thường - trắng */
   --nav-text-active: #f8f9fa; /* Màu chữ nav khi active - trắng */
   --sidebar-width: 220px; /* Độ rộng sidebar (khai báo sẵn để dùng sau) */
 }
@@ -102,28 +102,28 @@ body {
   max-width: 85vw !important;
   margin-left: auto !important;
   margin-right: auto !important;
-}
+} /* Giới hạn trang tối đa 85% chiều ngang màn hình, căn giữa */
 .page-columns,
 .page-full,
 .content {
   max-width: 100% !important;
   width: 100% !important;
-}
+} /* Gỡ giới hạn width của Quarto — mặc định Quarto cap ở ~900px */
 .cell-output,
 .cell-output-display {
   width: 100% !important;
   max-width: 100% !important;
   overflow-x: visible !important;
-}
+} /* Cho phép nội dung R chunk mở rộng full width */
 
 /* ===== REACTABLE FIX ===== */
-.reactable                      { width: 100% !important; }
-.reactable .rt-table            { width: 100% !important; table-layout: auto !important; }
-.reactable .rt-table-container  { overflow-x: visible !important; }
+.reactable                      { width: 100% !important; } /* Bảng chiếm full width container */
+.reactable .rt-table            { width: 100% !important; table-layout: auto !important; } /* auto = cột tự co giãn theo nội dung, không bị cố định */
+.reactable .rt-table-container  { overflow-x: visible !important; } /* Tắt scroll ngang mặc định của reactable */
 .reactable .rt-thead,
 .reactable .rt-tbody            { width: 100% !important; }
 .reactable .rt-td,
-.reactable .rt-th               { white-space: normal !important; }
+.reactable .rt-th               { white-space: normal !important; } /* Cho phép text trong cell xuống dòng — tránh bị cắt */
 
 /* =============================================
    NAVBAR - DARK FINTECH STYLE (VN Credit look)
@@ -133,9 +133,9 @@ body {
 .navbar,
 .quarto-navbar,
 nav.navbar {
-  background: var(--bg-navbar) !important;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.06) !important;
-  box-shadow: 0 2px 20px rgba(0, 0, 0, 0.4) !important;
+  background: var(--bg-navbar) !important; /* Nền navbar #111827 */
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06) !important; /* Đường kẻ phân cách mờ */
+  box-shadow: 0 2px 20px rgba(0, 0, 0, 0.4) !important; /* Đổ bóng phía dưới navbar */
   padding: 0.5rem 1.5rem !important;
 }
 
@@ -150,35 +150,36 @@ nav.navbar {
 
 /* --- Base nav-link --- */
 .navbar-nav .nav-link {
-  color: var(--nav-text) !important;
-  border: 2px solid transparent !important;
-  border-radius: 10px !important;
+  color: var(--nav-text) !important; /* Chữ xám nhạt lúc bình thường */
+  border: 2px solid transparent !important; /* Giữ chỗ border — không thấy nhưng tránh layout shift khi hover */
+  border-radius: 10px !important; /* Bo góc tròn */
   padding: 7px 14px !important;
-  margin: 2px 3px !important;
+  margin: 2px 3px !important; /* Khoảng cách giữa các tab */
   font-size: 0.9rem !important;
   font-weight: 500 !important;
-  transition: all 0.2s ease !important;
+  transition: all 0.2s ease !important; /* Mọi thay đổi animate mượt 0.2s */
   display: flex !important;
   align-items: center !important;
-  gap: 8px !important;
+  gap: 8px !important; /* Khoảng cách giữa icon và text */
 }
 
 /* --- Hover state --- */
 .navbar-nav .nav-link:hover {
-  background: var(--nav-hover-bg) !important;
-  border-color: rgba(108, 92, 231, 0.35) !important;
-  color: var(--nav-text-active) !important;
+  background: var(--nav-hover-bg) !important; /* Nền tím mờ xuất hiện */
+  border-color: rgba(108, 92, 231, 0.35) !important; /* Viền tím nhạt */
+  color: var(--nav-text-active) !important; /* Chữ sáng lên trắng */
 }
 
 /* --- Active / current page --- */
 .navbar-nav .nav-link.active,
 .navbar-nav .nav-item.active .nav-link,
 .navbar-nav .nav-link[aria-current="page"] {
-  background: var(--nav-active-bg) !important;
-  border-color: var(--nav-active-border) !important;
-  color: var(--nav-text-active) !important;
+   /* 3 selector để bắt mọi cách Quarto đánh dấu tab active */
+  background: var(--nav-active-bg) !important; /* Gradient tím đậm */
+  border-color: var(--nav-active-border) !important; /* Viền tím sáng #6c5ce7 */
+  color: var(--nav-text-active) !important; /* Chữ trắng */
   font-weight: 600 !important;
-  box-shadow: 0 0 16px rgba(108, 92, 231, 0.35) !important;
+  box-shadow: 0 0 16px rgba(108, 92, 231, 0.35) !important; /* Glow tím xung quanh tab */
 }
 
 /* --- Toggler (mobile) --- */
@@ -191,11 +192,11 @@ nav.navbar {
 
 /* --- Dropdown menu (nếu có) --- */
 .dropdown-menu {
-  background: var(--bg-navbar-alt) !important;
-  border: 1px solid rgba(108, 92, 231, 0.3) !important;
-  border-radius: 12px !important;
-  box-shadow: 0 8px 32px rgba(0,0,0,0.5) !important;
-  padding: 6px !important;
+  background: var(--bg-navbar-alt) !important; /* Nền xanh navy đậm hơn navbar */
+  border: 1px solid rgba(108, 92, 231, 0.3) !important; /* Viền tím mờ */
+  border-radius: 12px !important; /* Bo góc mềm */
+  box-shadow: 0 8px 32px rgba(0,0,0,0.5) !important; /* Đổ bóng sâu để nổi lên */
+  padding: 6px !important; /* Padding trong để item không sát viền */
 }
 .dropdown-item {
   color: var(--nav-text) !important;
@@ -206,7 +207,7 @@ nav.navbar {
 }
 .dropdown-item:hover,
 .dropdown-item:focus {
-  background: var(--nav-hover-bg) !important;
+  background: var(--nav-hover-bg) !important; /* Cùng style hover với nav-link */
   color: var(--nav-text-active) !important;
 }
 
