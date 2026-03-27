@@ -119,6 +119,11 @@ thang_n2 <- format(as.Date(Sys.Date() %m+% months(2), format = , format = "%Y-%m
 ### <span style="color: #C35817;font-family: cambria;">**1. Chi tiết theo tỉnh tiến độ HĐ dự kiến lên DT tháng ** <strong>`r thang_n`</strong></span>
 
 ```{r, warning=FALSE, message=FALSE, results = 'hide', echo = FALSE}
+b2c_aio1 <- b2c_aio1 %>%
+  mutate(am = case_when(
+   ma_tinh == "DTP" ~ "Sonln15",
+   TRUE ~ am
+  ))
 b2c_aio1 %>%
   filter(thang_dk_DT == thang_n) %>%
   group_by(ma_tinh, am) %>%
