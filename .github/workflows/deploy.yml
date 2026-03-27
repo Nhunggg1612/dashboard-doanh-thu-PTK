@@ -73,7 +73,9 @@ jobs:
             "googlesheets4",
             "shiny",
             "shinydashboard",
-            "shinyWidgets"
+            "shinyWidgets",
+            "jsonlite",
+            "htmlwidgets"
           ))
         shell: Rscript {0}
 

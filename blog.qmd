@@ -127,104 +127,196 @@ b2c_aio1 %>%
             gtri_dt = round(sum(gtri[!is.na(ma_hd) & !is.na(thang_DT)], na.rm = TRUE)/10^6,0),
             so_hd = sum(!is.na(ma_hd) & !is.na(thang_DT), na.rm = TRUE),
             ty_le = gtri_dt*100/gtri_dk) -> bc_dk_dt
-
+bc_dk_dt <- bc_dk_dt %>% arrange(desc(am))
 ```
 
 
 ```{r,out.width = '120%',fig.width=7, fig.height=4, echo = FALSE, warning=FALSE, message=FALSE}
-highchart() %>% 
-  hc_chart(type = "column") %>%
-  hc_xAxis(categories = bc_dk_dt$ma_tinh, 
-           labels = list(style=list(fontSize = "12px", fontFamily = "cambria")),
-           crosshair = list(
-             width = 40,
-             color = "rgba(180,180,180,0.2)",
-             zIndex = 0
-           )) %>%
-  hc_title(text = "Tỷ lệ dự kiến doanh thu tháng hiện tại",
-           margin = 20, 
-           align = "center",
-           style = list(color = "black", fontWeight = "bold", fontFamily = "cambria", fontSize = "20px")) %>% 
+library(dplyr)
+library(jsonlite)
+library(highcharter)
+library(htmlwidgets)
+
+thu_tu_am <- bc_dk_dt %>%
+  group_by(am) %>%
+  summarise(tong = sum(gtri_dk, na.rm = TRUE)) %>%
+  arrange(desc(tong)) %>%
+  pull(am)
+
+bc_dk_dt$am <- factor(bc_dk_dt$am, levels = thu_tu_am)
+bc_dk_dt    <- bc_dk_dt %>% arrange(am, desc(gtri_dk))
+
+n_total   <- nrow(bc_dk_dt)
+
+am_groups <- bc_dk_dt %>%
+  mutate(idx = row_number() - 1) %>%
+  group_by(am) %>%
+  summarise(n_cols = n(), .groups = "drop")
+
+am_groups_json <- toJSON(
+  list(am     = as.character(am_groups$am),
+       n_cols = am_groups$n_cols),
+  auto_unbox = TRUE
+)
+
+hc <- highchart() %>%
+  hc_chart(type = "column", marginBottom = 80) %>%
+  hc_xAxis(
+    categories = bc_dk_dt$ma_tinh,
+    labels     = list(style = list(fontSize = "11px", fontFamily = "cambria")),
+    crosshair  = list(width = 40, color = "rgba(180,180,180,0.2)", zIndex = 0)
+    # KHÔNG dùng plotLines
+  ) %>%
+  hc_title(
+    text   = "Tỷ lệ dự kiến doanh thu tháng hiện tại",
+    margin = 20, align = "center",
+    style  = list(color = "black", fontWeight = "bold",
+                  fontFamily = "cambria", fontSize = "20px")
+  ) %>%
   hc_plotOptions(
-    column = list(
-      states = list(
-        hover = list(color = NULL),
-        inactive = list(opacity = 0.3)
-      )
-    ),
-    series = list(
-      states = list(
-        inactive = list(opacity = 0.3)
-      )
-    )
+    column = list(states = list(hover    = list(color = NULL),
+                                inactive = list(opacity = 0.3))),
+    series = list(states = list(inactive = list(opacity = 0.3)))
   ) %>%
   hc_yAxis_multiples(
-    list(lineWidth = 3, 
-         title = list(text = "Dự kiến DT", style = list(fontWeight = "bold", fontSize = "15px", fontFamily = "cambria")), 
+    list(lineWidth = 3,
+         title  = list(text  = "Dự kiến DT",
+                       style = list(fontWeight = "bold", fontSize = "15px", fontFamily = "cambria")),
          labels = list(style = list(fontSize = "12px", fontFamily = "cambria"))),
-    list(showLastLabel = TRUE, opposite = TRUE, 
-         title = list(text = "%HT", style = list(fontWeight = "bold", fontSize = "15px", fontFamily = "cambria")), 
+    list(showLastLabel = TRUE, opposite = TRUE,
+         title  = list(text  = "%HT",
+                       style = list(fontWeight = "bold", fontSize = "15px", fontFamily = "cambria")),
          labels = list(style = list(fontSize = "12px", fontFamily = "cambria")))
   ) %>%
-  hc_add_series(name = "Tổng DT dự kiến", 
-                data = lapply(seq_along(bc_dk_dt$gtri_dk), function(i) {
-      list(y = round(bc_dk_dt$gtri_dk[i], 0),
-           so_hd_dk = bc_dk_dt$so_hd_dk[i])
+  hc_add_series(
+    name = "Tổng DT dự kiến",
+    data = lapply(seq_along(bc_dk_dt$gtri_dk), function(i) {
+      list(y = round(bc_dk_dt$gtri_dk[i], 0), so_hd_dk = bc_dk_dt$so_hd_dk[i])
     }),
-                states = list(hover = list(color = "#808080"))) %>%
-  hc_add_series(name = "Đã lên DT", 
-                data = lapply(seq_along(bc_dk_dt$gtri_dt), function(i) {
-      list(y = round(bc_dk_dt$gtri_dt[i], 0),
-           so_hd = bc_dk_dt$so_hd[i])
+    states = list(hover = list(color = "#808080"))
+  ) %>%
+  hc_add_series(
+    name = "Đã lên DT",
+    data = lapply(seq_along(bc_dk_dt$gtri_dt), function(i) {
+      list(y = round(bc_dk_dt$gtri_dt[i], 0), so_hd = bc_dk_dt$so_hd[i])
     }),
-                states = list(hover = list(color = "#8DB600"))) %>%
-  hc_add_series(name = "Tỷ lệ (%)", 
-                data = round(bc_dk_dt$ty_le, 0), 
-                type = "spline", yAxis = 1,
-                dataLabels = list(enabled = TRUE, format = "{y}%")) %>%
+    states = list(hover = list(color = "#8DB600"))
+  ) %>%
+  hc_add_series(
+    name       = "Tỷ lệ (%)",
+    data       = round(bc_dk_dt$ty_le, 0),
+    type       = "spline", yAxis = 1,
+    dataLabels = list(enabled = TRUE, format = "{y}%")
+  ) %>%
   hc_tooltip(
-    shared = TRUE,
-    useHTML = TRUE,
+    shared = TRUE, useHTML = TRUE,
     formatter = JS("
       function() {
         var s = '<b>' + this.x + '</b><br/>';
-
-        var gtri_dk  = 0, gtri_dt = 0, ty_le = 0, so_hd_dk = 0, so_hd = 0;
-
+        var gtri_dk = 0, gtri_dt = 0, ty_le = 0, so_hd_dk = 0, so_hd = 0;
         for (var i = 0; i < this.points.length; i++) {
-          var name = this.points[i].series.name;
-          var pt   = this.points[i].point;
-          var val  = this.points[i].y;
-
-          if (name === 'Tổng DT dự kiến') { gtri_dk  = val; so_hd_dk = pt.so_hd_dk; }
-          if (name === 'Đã lên DT')       { gtri_dt  = val; so_hd    = pt.so_hd; }
-          if (name === 'Tỷ lệ (%)')         ty_le    = val;
+          var nm  = this.points[i].series.name;
+          var pt  = this.points[i].point;
+          var val = this.points[i].y;
+          if (nm === 'Tổng DT dự kiến') { gtri_dk  = val; so_hd_dk = pt.so_hd_dk; }
+          if (nm === 'Đã lên DT')       { gtri_dt  = val; so_hd    = pt.so_hd; }
+          if (nm === 'Tỷ lệ (%)')         ty_le    = val;
         }
-
-        s += '<span style=\"color:#D9D9D9\">●</span> Tổng DT dự kiến: <b>' + 
-               Highcharts.numberFormat(gtri_dk, 0, '.', ',') + 
+        s += '<span style=\"color:#D9D9D9\">●</span> Tổng DT dự kiến: <b>' +
+               Highcharts.numberFormat(gtri_dk, 0, '.', ',') +
              '</b> ~ Số HĐ DK: <b>' + so_hd_dk + '</b><br/>';
-
-        s += '<span style=\"color:#C84309\">●</span> Đã lên DT: <b>' + 
-               Highcharts.numberFormat(gtri_dt, 0, '.', ',') + 
+        s += '<span style=\"color:#C84309\">●</span> Đã lên DT: <b>' +
+               Highcharts.numberFormat(gtri_dt, 0, '.', ',') +
              '</b> ~ Số HĐ: <b>' + so_hd + '</b><br/>';
-
         s += '<span style=\"color:#645889\">●</span> Tỷ lệ (%): <b>' + ty_le + '</b>';
-
         return s;
       }
     ")
   ) %>%
-  hc_colors(c("#D9D9D9", "#C84309", "#645889", "transparent", "transparent")) %>%
+  hc_colors(c("#D9D9D9", "#C84309", "#645889")) %>%
   hc_legend(
-    labels = list(style = list(color = "black", fontWeight = "bold", fontFamily = "cambria", fontSize = "20px"))
+    labels = list(style = list(color = "black", fontWeight = "bold",
+                               fontFamily = "cambria", fontSize = "14px"))
   ) %>%
-  hc_exporting(
-    enabled = TRUE,
-    filename = "custom-file-name"
-  )
+  hc_exporting(enabled = TRUE, filename = "custom-file-name")
+
+onRender(hc, paste0("
+function(el, x) {
+  var groups  = ", am_groups_json, ";
+  var N       = ", n_total, ";
+  var nGroups = groups.am.length;
+
+  function tryDraw() {
+    var charts = Highcharts.charts.filter(Boolean);
+    if (!charts.length) { setTimeout(tryDraw, 150); return; }
+    var chart = charts[charts.length - 1];
+    if (!chart.plotWidth || chart.plotWidth === 0) { setTimeout(tryDraw, 150); return; }
+
+    var pLeft  = chart.plotLeft;
+    var pRight = chart.chartWidth - pLeft - chart.plotWidth;
+    var colW   = chart.plotWidth / N;   /* px mỗi cột — cùng công thức với flex */
+    var pullUp = chart.marginBottom - 25;
+
+    el.style.position = 'relative';
+
+    /* Vẽ đường dọc nét đứt trong plot area */
+    var cumCols = 0;
+    for (var i = 0; i < nGroups - 1; i++) {
+      cumCols += groups.n_cols[i];
+      var sepX = pLeft + cumCols * colW;   /* pixel chính xác, đồng bộ với flex */
+
+      var sep = document.createElement('div');
+      sep.style.cssText = [
+        'position:absolute',
+        'left:'   + Math.round(sepX) + 'px',
+        'top:'    + chart.plotTop + 'px',
+        'width:1px',
+        'height:' + (chart.plotHeight + 18) + 'px',
+        'border-left:1px dashed #999999',
+        'pointer-events:none',
+        'z-index:3'
+      ].join(';');
+      el.appendChild(sep);
+    }
+
+    /* Flex row chứa label AM — dùng cùng colW thông qua flex proportion */
+    var row = document.createElement('div');
+    row.style.cssText = [
+      'display:flex',
+      'margin-top:-' + pullUp + 'px',
+      'padding-left:' + pLeft + 'px',
+      'padding-right:' + pRight + 'px',
+      'width:' + chart.chartWidth + 'px',
+      'box-sizing:border-box',
+      'pointer-events:none'
+    ].join(';');
+
+    for (var j = 0; j < nGroups; j++) {
+      var cell = document.createElement('div');
+      cell.textContent = groups.am[j];
+      cell.style.cssText = [
+        'flex:' + groups.n_cols[j],
+        'text-align:center',
+        'font-size:12px',
+        'font-family:Cambria,serif',
+        'font-weight:bold',
+        'color:#333333',
+        'border-top:2px solid #555555',
+        'padding-top:4px'
+      ].join(';');
+      row.appendChild(cell);
+    }
+
+    el.appendChild(row);
+  }
+
+  setTimeout(tryDraw, 300);
+}
+"))
 
 ```
+
+
 
 
 ```{r, warning=FALSE, message=FALSE, results = 'hide', echo = FALSE}
