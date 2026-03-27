@@ -309,7 +309,34 @@ b2c_aio1 %>%
 
 
 ```{r,out.width = '120%',fig.width=7, fig.height=4, echo = FALSE, warning=FALSE, message=FALSE}
-highchart() %>% 
+library(dplyr)
+library(jsonlite)
+library(highcharter)
+library(htmlwidgets)
+
+thu_tu_am <- bc_dk_thang_n %>%
+  group_by(am) %>%
+  summarise(tong = sum(gtri_hd, na.rm = TRUE)) %>%
+  arrange(desc(tong)) %>%
+  pull(am)
+
+bc_dk_thang_n$am <- factor(bc_dk_thang_n$am, levels = thu_tu_am)
+bc_dk_thang_n    <- bc_dk_thang_n %>% arrange(am, ma_tinh)
+
+n_total   <- nrow(bc_dk_thang_n)
+
+am_groups <- bc_dk_thang_n %>%
+  mutate(idx = row_number() - 1) %>%
+  group_by(am) %>%
+  summarise(n_cols = n(), .groups = "drop")
+
+am_groups_json <- toJSON(
+  list(am     = as.character(am_groups$am),
+       n_cols = am_groups$n_cols),
+  auto_unbox = TRUE
+)
+
+hc <- highchart() %>% 
   hc_chart(type = "column") %>%
   hc_xAxis(categories = bc_dk_thang_n$ma_tinh, labels = list(style=list(fontSize = "12px",fontFamily = "cambria")),
            crosshair = list(
@@ -406,6 +433,97 @@ highchart() %>%
     filename = "custom-file-name"
     )
 
-```
+onRender(hc, paste0("
+function(el, x) {
+  var groups  = ", am_groups_json, ";
+  var N       = ", n_total, ";
+  var nGroups = groups.am.length;
 
+  function tryDraw() {
+    /* Lấy chart qua container ID — không dùng Highcharts.charts index */
+    var container = el.querySelector('.highcharts-container');
+    if (!container) { setTimeout(tryDraw, 200); return; }
+
+    var chart = null;
+    for (var i = 0; i < Highcharts.charts.length; i++) {
+      var c = Highcharts.charts[i];
+      if (c && c.renderTo && el.contains(c.renderTo)) {
+        chart = c;
+        break;
+      }
+    }
+    if (!chart || !chart.plotWidth || chart.plotWidth === 0) {
+      setTimeout(tryDraw, 200); return;
+    }
+
+    var pLeft  = chart.plotLeft;
+    var pRight = chart.chartWidth - pLeft - chart.plotWidth;
+    var colW   = chart.plotWidth / N;
+    var pullUp = chart.marginBottom - 25;
+
+    el.style.position = 'relative';
+
+    /* Xóa element cũ nếu re-render */
+    var old = el.querySelectorAll('._am_sep, ._am_row');
+    old.forEach(function(o) { o.parentNode.removeChild(o); });
+
+    /* Đường dọc nét đứt */
+    var cumCols = 0;
+    for (var i = 0; i < nGroups - 1; i++) {
+      cumCols += groups.n_cols[i];
+      var sepX = pLeft + cumCols * colW;
+      var sep  = document.createElement('div');
+      sep.className = '_am_sep';
+      sep.style.cssText = [
+        'position:absolute',
+        'left:'   + Math.round(sepX) + 'px',
+        'top:'    + chart.plotTop + 'px',
+        'width:1px',
+        'height:' + (chart.plotHeight + 18) + 'px',
+        'border-left:1px dashed #999999',
+        'pointer-events:none',
+        'z-index:3'
+      ].join(';');
+      el.appendChild(sep);
+    }
+
+    /* Flex row label AM */
+    var row = document.createElement('div');
+    row.className = '_am_row';
+    row.style.cssText = [
+      'display:flex',
+      'margin-top:-' + pullUp + 'px',
+      'padding-left:' + pLeft + 'px',
+      'padding-right:' + pRight + 'px',
+      'width:' + chart.chartWidth + 'px',
+      'box-sizing:border-box',
+      'pointer-events:none'
+    ].join(';');
+
+    for (var j = 0; j < nGroups; j++) {
+      var cell = document.createElement('div');
+      cell.textContent = groups.am[j];
+      cell.style.cssText = [
+        'flex:' + groups.n_cols[j],
+        'text-align:center',
+        'font-size:12px',
+        'font-family:Cambria,serif',
+        'font-weight:bold',
+        'color:#333333',
+        'border-top:2px solid #555555',
+        'padding-top:4px'
+      ].join(';');
+      row.appendChild(cell);
+    }
+    el.appendChild(row);
+  }
+
+  /* Thử nhiều lần với delay tăng dần — đảm bảo chạy cả Netlify */
+  setTimeout(tryDraw, 300);
+  setTimeout(tryDraw, 800);
+  setTimeout(tryDraw, 1500);
+}
+"))
+
+```
 
