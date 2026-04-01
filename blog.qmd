@@ -113,8 +113,14 @@ b2c_aio1 %>% drop_na(ma_hd) -> b2c_aio1
 thang_n <- format(as.Date(today(), format = , format = "%Y-%m-%d"), format = "%m-%Y")
 thang_n1 <- format(as.Date(Sys.Date() %m+% months(1), format = , format = "%Y-%m-%d"), format = "%m-%Y")
 thang_n2 <- format(as.Date(Sys.Date() %m+% months(2), format = , format = "%Y-%m-%d"), format = "%m-%Y")
+now <- format(
+  as.POSIXct(Sys.time(), tz = "Asia/Ho_Chi_Minh"), 
+  "%d/%m/%Y %H:%M:%S"
+)
+
 ```
 
+**Cập nhật dữ liệu lúc **<strong>`r now`</strong>
 ## <span style="color: #C35817;font-family: cambria;">**II. DỰ KIẾN DOANH THU THÁNG ** <strong>`r thang_n`</strong></span>
 ### <span style="color: #C35817;font-family: cambria;">**1. Chi tiết theo tỉnh tiến độ HĐ dự kiến lên DT tháng ** <strong>`r thang_n`</strong></span>
 
