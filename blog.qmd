@@ -121,6 +121,7 @@ now <- format(
 ```
 
 **Cập nhật dữ liệu lúc **<strong>`r now`</strong>
+
 ## <span style="color: #C35817;font-family: cambria;">**II. DỰ KIẾN DOANH THU THÁNG ** <strong>`r thang_n`</strong></span>
 ### <span style="color: #C35817;font-family: cambria;">**1. Chi tiết theo tỉnh tiến độ HĐ dự kiến lên DT tháng ** <strong>`r thang_n`</strong></span>
 
