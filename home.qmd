@@ -66,7 +66,7 @@ if (Sys.getenv("GCP_SERVICE_ACCOUNT") != "") {
 sheet_url <- "https://docs.google.com/spreadsheets/d/12BlvL_Fxdubk5PL4G-pjX-c4_iQwiubVlknHCrAw5dw/edit?gid=904243310#gid=904243310"
 b2c_aio <- read_sheet(sheet_url, sheet = "Chi tiết")
 
-b2c_aio <- b2c_aio[-c(1:4),c(1,2,3,10:20,22:27, 29:34, 36:44, 48, 52, 53, 55:67,51)]
+b2c_aio <- b2c_aio[-c(1:4),c(1,2,3,10:20,22:27, 29:34, 36:44, 48, 53, 54, 56:68,51)]
 n_aio <- c("don_huy", "ma_tinh", "ma_hd", "gtri", "namthang_ky", "ngay_ky", "dich_vu", "thang_DT", "ngay_tam_ung", "gtri_tam_ung", "loai_pin", "ma_pin", "ten_pin", "so_pin", "ngay_cap_pin", "dambao_pin", "loai_inver", "ma_inver", "ten_inver", "so_inver", "ngay_cap_inver", "dambao_inver", "loai_acquy", "ma_acquy", "ten_acquy", "so_acquy", "ngay_cap_acquy", "dambao_acquy", "du_hang", "du_dk", "so_hd", "tyle_tamung", "am", "han_thicong", "so_ngau_tamung", "thang_dk_DT", "mat_bang", "quahan_thicong", "BG_VHKT", "tien_do", "ngay_thicong_xong", "ngay_BBNT", "vuong", "vuong_chitiet", "do_chacchan_VHKT", "ngay_dien_thicong", "ngay_BG_sang", "thang_ky", "nam_ky", "today_ngayBG", "today_ngaythicong", "chac_chan")
 colnames(b2c_aio) <- n_aio
 
