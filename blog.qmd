@@ -962,7 +962,7 @@ highchart() %>%
   ) %>%
   hc_add_series(
     name = "Số HĐ bắt đầu thi công",
-    data = round(bc_lendoanhthu$so_hd, 0),
+    data = round(bc_ngaybatdau$so_hd, 0),
     type = "spline",
     yAxis = 0,  # ← sửa từ 1 thành 0
     dataLabels = list(enabled = TRUE, format = "{y}")
