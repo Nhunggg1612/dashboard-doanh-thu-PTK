@@ -60,16 +60,16 @@ if (Sys.getenv("GCP_SERVICE_ACCOUNT") != "") {
 sheet_url <- "https://docs.google.com/spreadsheets/d/12BlvL_Fxdubk5PL4G-pjX-c4_iQwiubVlknHCrAw5dw/edit?gid=904243310#gid=904243310"
 b2c_aio <- read_sheet(sheet_url, sheet = "Chi tiết")
 
-b2c_aio <- b2c_aio[-c(1:4),c(1,2,3,10:20,22:27, 29:34, 36:44, 48, 53, 54, 56:68,51)]
-n_aio <- c("don_huy", "ma_tinh", "ma_hd", "gtri", "namthang_ky", "ngay_ky", "dich_vu", "thang_DT", "ngay_tam_ung", "gtri_tam_ung", "loai_pin", "ma_pin", "ten_pin", "so_pin", "ngay_cap_pin", "dambao_pin", "loai_inver", "ma_inver", "ten_inver", "so_inver", "ngay_cap_inver", "dambao_inver", "loai_acquy", "ma_acquy", "ten_acquy", "so_acquy", "ngay_cap_acquy", "dambao_acquy", "du_hang", "du_dk", "so_hd", "tyle_tamung", "am", "han_thicong", "so_ngau_tamung", "thang_dk_DT", "mat_bang", "quahan_thicong", "BG_VHKT", "tien_do", "ngay_thicong_xong", "ngay_BBNT", "vuong", "vuong_chitiet", "do_chacchan_VHKT", "ngay_dien_thicong", "ngay_BG_sang", "thang_ky", "nam_ky", "today_ngayBG", "today_ngaythicong", "chac_chan")
-colnames(b2c_aio) <- n_aio
+b2c_aio1 <- b2c_aio[-c(1:4),c(1,2,3,10:20,22:27, 29:34, 36:44, 48, 53, 54, 56:68,51,79:80,82:83,85,86,78)]
+n_aio <- c("don_huy", "ma_tinh", "ma_hd", "gtri", "namthang_ky", "ngay_ky", "dich_vu", "thang_DT", "ngay_tam_ung", "gtri_tam_ung", "loai_pin", "ma_pin", "ten_pin", "so_pin", "ngay_cap_pin", "dambao_pin", "loai_inver", "ma_inver", "ten_inver", "so_inver", "ngay_cap_inver", "dambao_inver", "loai_acquy", "ma_acquy", "ten_acquy", "so_acquy", "ngay_cap_acquy", "dambao_acquy", "du_hang", "du_dk", "so_hd", "tyle_tamung", "am", "han_thicong", "so_ngau_tamung", "thang_dk_DT", "mat_bang", "quahan_thicong", "BG_VHKT", "tien_do", "ngay_thicong_xong", "ngay_BBNT", "vuong", "vuong_chitiet", "do_chacchan_VHKT", "ngay_dien_thicong", "ngay_BG_sang", "thang_ky", "nam_ky", "today_ngayBG", "today_ngaythicong", "chac_chan","cn_matbang", "cn_hanghoa", "cn_tiendo", "cn_thangdk", "cn_ngaybatdau", "cn_ngaythicongxong","ngay_ht")
+colnames(b2c_aio1) <- n_aio
 
 #Chuyển các cột list định dạng giống ngày về date %m-%Y
-b2c_aio1 <- b2c_aio
 b2c_aio1 <- b2c_aio1 %>%
   rowwise() %>%
   mutate(namthang_ky = toString(unlist(namthang_ky))) %>%
   mutate(thang_dk_DT = toString(unlist(thang_dk_DT))) %>%
+  mutate(cn_thangdk = toString(unlist(cn_thangdk))) %>%
   ungroup()
 
 b2c_aio1 <- b2c_aio1 %>%
@@ -79,6 +79,16 @@ b2c_aio1 <- b2c_aio1 %>%
       NA_character_,
       format(
         as.Date(namthang_ky, format = "%Y-%m-%d"),
+        format = "%m-%Y"
+      )
+    )
+  ) %>%
+  mutate(
+    cn_thangdk = ifelse(
+      is.na(cn_thangdk),
+      NA_character_,
+      format(
+        as.Date(cn_thangdk, format = "%Y-%m-%d"),
         format = "%m-%Y"
       )
     )
@@ -94,17 +104,32 @@ b2c_aio1 <- b2c_aio1 %>%
     )
   )
 
+b2c_aio1 <- b2c_aio1 %>%
+  mutate(across(c(cn_ngaybatdau, cn_ngaythicongxong, ngay_ht), ~ {
+    x <- if (is.list(.)) sapply(., function(v) if (is.null(v) || length(v) == 0) NA_character_ else as.character(v[[1]])) else as.character(.)
+    x[x == "NULL"] <- NA
+    as.Date(x, format = "%Y-%m-%d")
+  }))
 
 ####Chuyển tất cả các cột list về number
-b2c_aio1[] <- b2c_aio1 %>%
-  mutate(across(where(is.list), ~ {
-    lens <- lengths(.)
-    max_len <- max(lens)
-    lapply(., function(x) {
-      if(length(x) < max_len) c(unlist(x), rep(NA, max_len - length(x))) else unlist(x)
-    })
-  })) %>%
-  mutate(across(where(is.list), unlist))
+# Tách riêng list cols
+list_cols <- names(b2c_aio1)[sapply(b2c_aio1, is.list)]
+
+# Kiểm tra col nào chứa date
+date_list_cols <- list_cols[sapply(list_cols, function(col) {
+  non_null <- Filter(Negate(is.null), b2c_aio1[[col]])
+  if (length(non_null) == 0) return(FALSE)  # ✅ toàn NULL → bỏ qua
+  inherits(non_null[[1]], c("Date", "POSIXct", "POSIXt"))
+})]
+
+other_list_cols <- setdiff(list_cols, date_list_cols)
+
+# Xử lý cột thường
+b2c_aio1 <- b2c_aio1 %>%
+  mutate(across(all_of(other_list_cols), ~ {
+    sapply(., function(x) if (is.null(x) || length(x) == 0) NA else x[[1]])
+  }))
+
 
 ```
 
@@ -521,7 +546,477 @@ shiny::fluidRow(
 
 <span style="color: #3333CC;font-family: cambria;">**_* Di chuột qua cột Mã tỉnh để xem list tỉnh_**</span>
 
-### <span style="color: #C35817;font-family: cambria;">**2. Tiến độ thi công HĐ dự kiến lên DT tháng ** <strong>`r thang_n`</strong></span>
+### <span style="color: #C35817;font-family: cambria;">**2. Tiến độ thi công CNCT phản hồi ** <strong>`r thang_n`</strong></span>
+#### <span style="color: #C35817;font-family: cambria;">**2.1. Hiện trạng HĐ tồn và dự kiến DT**</span>
+```{r, warning=FALSE, message=FALSE, results = 'hide', echo = FALSE}
+b2c_aio1 %>%
+  group_by(ma_tinh, am) %>%
+  summarise(so_ton = sum(!is.na(ma_hd)),
+            gtri_ton = sum(gtri[!is.na(ma_hd)], na.rm = TRUE)/10^6,
+            so_dk = sum(!is.na(ma_hd) & cn_thangdk == thang_n, na.rm = TRUE),
+            gtri_dk = round(sum(gtri[!is.na(ma_hd) & cn_thangdk == thang_n], na.rm = TRUE)/10^6,0),
+            so_comatbang = sum(!is.na(ma_hd) & cn_matbang == "Đã đảm bảo MB", na.rm = TRUE),
+            gtri_comatbang = round(sum(gtri[!is.na(ma_hd) & cn_matbang == "Đã đảm bảo MB"], na.rm = TRUE)/10^6,0),
+            so_komatbang = sum(!is.na(ma_hd) & cn_matbang == "Chưa đảm bảo MB", na.rm = TRUE),
+            gtri_komatbang = round(sum(gtri[!is.na(ma_hd) & cn_matbang == "Chưa đảm bảo MB"], na.rm = TRUE)/10^6,0),
+            so_kodienmatbang = sum(!is.na(ma_hd) & is.na(cn_matbang), na.rm = TRUE),
+            gtri_kodienmatbang = round(sum(gtri[!is.na(ma_hd) & is.na(cn_matbang)], na.rm = TRUE)/10^6,0),
+            
+            so_covattu = sum(!is.na(ma_hd) & cn_hanghoa == "Đã đủ vật tư", na.rm = TRUE),
+            gtri_covattu = round(sum(gtri[!is.na(ma_hd) & cn_hanghoa == "Đã đủ vật tư"], na.rm = TRUE)/10^6,0),
+            so_kovattu = sum(!is.na(ma_hd) & cn_hanghoa == "Thiếu vật tư", na.rm = TRUE),
+            gtri_kovattu = round(sum(gtri[!is.na(ma_hd) & cn_hanghoa == "Thiếu vật tư"], na.rm = TRUE)/10^6,0),
+            so_kodienvattu = sum(!is.na(ma_hd) & is.na(cn_hanghoa), na.rm = TRUE),
+            gtri_kodienvattu = round(sum(gtri[!is.na(ma_hd) & is.na(cn_hanghoa)], na.rm = TRUE)/10^6,0)
+            ) -> bc_dambao_cnct
+
+b2c_aio1 %>%
+  group_by(ma_tinh, am) %>%
+  summarise(so_dk = sum(!is.na(ma_hd) & cn_thangdk == thang_n, na.rm = TRUE),
+            gtri_dk = round(sum(gtri[!is.na(ma_hd) & cn_thangdk == thang_n], na.rm = TRUE)/10^6,0),
+            so_chuathicong = sum(!is.na(ma_hd) & cn_tiendo == "Chưa thi công", na.rm = TRUE),
+            gtri_chuathicong = round(sum(gtri[!is.na(ma_hd) & cn_tiendo == "Chưa thi công"], na.rm = TRUE)/10^6,0),
+            so_dangthicong = sum(!is.na(ma_hd) & cn_tiendo == "Đang thi công", na.rm = TRUE),
+            gtri_dangthicong = round(sum(gtri[!is.na(ma_hd) & cn_tiendo == "Đang thi công"], na.rm = TRUE)/10^6,0),
+            so_thicongxong = sum(!is.na(ma_hd) & cn_tiendo == "Thi công xong" | cn_tiendo ==  "Đã có BBNT", na.rm = TRUE),
+            gtri_thicongxong = round(sum(gtri[!is.na(ma_hd) & cn_tiendo == "Thi công xong" | cn_tiendo ==  "Đã có BBNT"], na.rm = TRUE)/10^6,0),
+            so_kodientiendo = sum(!is.na(ma_hd) & is.na(cn_tiendo), na.rm = TRUE),
+            gtri_kodientiendo = round(sum(gtri[!is.na(ma_hd) & is.na(cn_tiendo)], na.rm = TRUE)/10^6,0)
+            ) -> bc_tiendo_cnct
+
+
+```
+
+
+```{r, warning=FALSE, message=FALSE, results = 'hide', echo = FALSE}
+kq1x <- unlist(bc_dambao_cnct[1])
+kq2x <- unlist(bc_dambao_cnct[2])
+kq3x <- accounting(unlist(bc_dambao_cnct[c(1:nrow(bc_dambao_cnct)),3]), digits = 2L, format = "d", big.mark = ",")
+kq4x <- accounting(unlist(bc_dambao_cnct[c(1:nrow(bc_dambao_cnct)),4]), digits = 2L, format = "d", big.mark = ",")
+kq5x <- accounting(unlist(bc_dambao_cnct[c(1:nrow(bc_dambao_cnct)),5]), digits = 2L, format = "d", big.mark = ",")
+kq6x <- accounting(unlist(bc_dambao_cnct[c(1:nrow(bc_dambao_cnct)),6]), digits = 2L, format = "d", big.mark = ",")
+kq7x <- accounting(unlist(bc_dambao_cnct[c(1:nrow(bc_dambao_cnct)),7]), digits = 2L, format = "d", big.mark = ",")
+kq8x <- accounting(unlist(bc_dambao_cnct[c(1:nrow(bc_dambao_cnct)),8]), digits = 2L, format = "d", big.mark = ",")
+kq9x <- accounting(unlist(bc_dambao_cnct[c(1:nrow(bc_dambao_cnct)),9]), digits = 2L, format = "d", big.mark = ",")
+kq10x <- accounting(unlist(bc_dambao_cnct[c(1:nrow(bc_dambao_cnct)),10]), digits = 2L, format = "d", big.mark = ",")
+kq11x <- accounting(unlist(bc_dambao_cnct[c(1:nrow(bc_dambao_cnct)),11]), digits = 2L, format = "d", big.mark = ",")
+kq12x <- accounting(unlist(bc_dambao_cnct[c(1:nrow(bc_dambao_cnct)),12]), digits = 2L, format = "d", big.mark = ",")
+kq13x <- accounting(unlist(bc_dambao_cnct[c(1:nrow(bc_dambao_cnct)),13]), digits = 2L, format = "d", big.mark = ",")
+kq14x <- accounting(unlist(bc_dambao_cnct[c(1:nrow(bc_dambao_cnct)),14]), digits = 2L, format = "d", big.mark = ",")
+kq15x <- accounting(unlist(bc_dambao_cnct[c(1:nrow(bc_dambao_cnct)),15]), digits = 2L, format = "d", big.mark = ",")
+kq16x <- accounting(unlist(bc_dambao_cnct[c(1:nrow(bc_dambao_cnct)),16]), digits = 2L, format = "d", big.mark = ",")
+kq17x <- accounting(unlist(bc_dambao_cnct[c(1:nrow(bc_dambao_cnct)),15]), digits = 2L, format = "d", big.mark = ",")
+kq18x <- accounting(unlist(bc_dambao_cnct[c(1:nrow(bc_dambao_cnct)),16]), digits = 2L, format = "d", big.mark = ",")
+
+bc_dambao_cnct_tb <- data.frame(kq1x,kq2x, kq3x, kq4x,kq5x,kq6x,kq7x,kq8x,kq9x, kq10x,kq11x,kq12x, kq13x, kq14x, kq15x, kq16x,kq17x,kq18x)
+bc_dambao_cnct_tb[3:18] <- lapply(bc_dambao_cnct_tb[3:18], as.numeric)
+rownames(bc_dambao_cnct_tb) <- NULL
+```
+
+```{r,out.width = '150%', echo = FALSE, warning=FALSE, message=FALSE}
+library(crosstalk)
+library(reactable)
+shared_bc_dambao_cnct_tb <- SharedData$new(bc_dambao_cnct_tb)
+
+shiny::fluidRow(
+  shiny::column(
+    9,
+    reactable(shared_bc_dambao_cnct_tb, minRows = 3,width = 1860, height = "auto", pagination = FALSE, groupBy = "kq2x", 
+              columnGroups = list(
+    colGroup("Tổng NV tồn", columns = c("kq3x", "kq4x"), sticky = "left", headerStyle = list(color = "white", background = "#F56222", whiteSpace = "normal",textAlign = "center")),
+    colGroup(paste0("Tổng DK DT T", thang_n), columns = c("kq5x", "kq6x"), sticky = "left", headerStyle = list(color = "white", background = "#F56222", whiteSpace = "normal",textAlign = "center")),
+    colGroup("Đã đảm bảo MB", columns = c("kq7x", "kq8x"), sticky = "left", headerStyle = list(color = "white", background = "#009900", whiteSpace = "normal",textAlign = "center")),
+     colGroup("Chưa đảm bảo MB", columns = c("kq9x", "kq10x"), sticky = "left", headerStyle = list(color = "white", background = "#009900", whiteSpace = "normal",textAlign = "center")),
+     colGroup("Chưa điền MB", columns = c( "kq11x", "kq12x"), sticky = "left", headerStyle = list(color = "white", background = "#009900", whiteSpace = "normal",textAlign = "center")),
+    colGroup("Chưa đảm bảo vật tư", columns = c( "kq13x", "kq14x" ), sticky = "left", headerStyle = list(color = "white", background = "#3333CC", whiteSpace = "normal",textAlign = "center")),
+    colGroup("Đã đảm bảo vật tư", columns = c( "kq15x","kq16x" ), sticky = "left", headerStyle = list(color = "white", background = "#3333CC", whiteSpace = "normal",textAlign = "center")),
+    colGroup("Chưa điền vật tư", columns = c( "kq17x", "kq18x" ), sticky = "left", headerStyle = list(color = "white", background = "#3333CC", whiteSpace = "normal",textAlign = "center"))
+  ),
+  resizable = TRUE,
+  wrap = FALSE,
+  searchable = TRUE,
+  bordered = TRUE, highlight = TRUE, style = list(fontSize = "16px"),
+  rowStyle = JS("
+    function(rowInfo, state) {
+      // Kiểm tra có subRows không → group row
+      if (rowInfo.subRows && rowInfo.subRows.length > 0) {
+        return {
+          backgroundColor: '#FFFFFF',  // group row: trắng
+          fontWeight: 'bold',
+          color: '#000000',
+          borderLeft: '2px solid transparent',
+          transition: 'background-color 0.2s ease'
+        };
+      } else {
+        return {
+          borderLeft: '2px solid #ffa62d',
+          backgroundColor: '#f5f5f5',   // subrows: xám nhạt
+          transition: 'background-color 0.2s ease'
+        };
+      }
+    }
+  "), 
+  theme = reactableTheme(
+  headerStyle = list(background = "#F56222"),
+  rowStyle = list(
+    `&:hover` = list(
+      backgroundColor = "#FFE4CC !important",
+      cursor = "pointer"
+    )
+  )
+),
+  defaultColDef = colDef(
+    #headerStyle = list(color = "black", background = "#F5DEB3", whiteSpace = "normal",textAlign = "center"),
+    footerStyle = list(fontWeight = "bold", color = "#B22222")
+  ),
+  defaultSorted = c("kq1x","kq2x"),
+  striped = FALSE,
+  columns = list(
+    
+    kq1x = colDef(name = "Mã tỉnh", headerStyle = list(color = "black", background = "#F5DEB3", whiteSpace = "normal",textAlign = "center"),
+                 aggregate = JS("
+        function(values, rows) {
+          return values.join(', ')
+        }
+      "),
+      aggregated = JS("
+        function(cellInfo) {
+          return React.createElement('span', {
+            title: cellInfo.value,
+            style: {cursor: 'help', fontWeight: 'bold'},
+          }, cellInfo.value);
+        }
+      "),
+      # Visual feedback khi hover
+      style  = JS("
+    function(rowInfo, state) {
+      // Kiểm tra có subRows không → group row
+      if (rowInfo.subRows && rowInfo.subRows.length > 0) {
+        return {
+          cursor: 'help',  // group row: trắng
+          fontWeight: 'bold',
+          backgroundColor: '#f5f5f5',
+          textDecoration: 'underline dotted'
+        };
+      } else {
+        return {
+          backgroundColor: '#f5f5f5'   // subrows: xám nhạt
+        };
+      }
+    }
+  "),
+     align = "left", width = 100, footer = "Tổng"),
+    kq2x = colDef(name = "AM", headerStyle = list(color = "black", background = "#F5DEB3", whiteSpace = "normal",textAlign = "center"),
+                  cell = JS("
+        function(cellInfo) {
+          // Add a tooltip to the grouped row header
+          return '<span title=\"Group ' + cellInfo.value + '\">' + cellInfo.value + '</span>'
+        }
+      "),
+      html = TRUE,
+      aggregate = "count", align = "left", width = 150),
+  
+    kq3x = colDef(name = "Số lượng", headerStyle = list(color = "black", background = "#F5DEB3", whiteSpace = "normal",textAlign = "center"),
+      aggregate = "sum", align = "right", width = 90, footer = function(values) sprintf("%.0f", sum(values))),
+    
+    kq4x = colDef(name = "Giá trị", headerStyle = list(color = "black", background = "#F5DEB3", whiteSpace = "normal",textAlign = "center"),
+      aggregate = "sum", align = "right", width = 100, format = colFormat(digits = 0, separators = TRUE), footer = function(values) sprintf("%s", format(sum(values), big.mark = ",", digits = 2L))),
+    
+    kq5x = colDef(name = "Số lượng", headerStyle = list(color = "black", background = "#F5DEB3", whiteSpace = "normal",textAlign = "center"),
+      aggregate = "sum", align = "right", width = 90, footer = function(values) sprintf("%.0f", sum(values))),
+    
+    kq6x = colDef(name = "Giá trị", headerStyle = list(color = "black", background = "#F5DEB3", whiteSpace = "normal",textAlign = "center"),
+      aggregate = "sum", align = "right", width = 100, format = colFormat(digits = 0, separators = TRUE), footer = function(values) sprintf("%s", format(sum(values), big.mark = ",", digits = 2L))),
+    
+    kq7x = colDef(name = "Số lượng", headerStyle = list(color = "black", background = "#C8E2B1", whiteSpace = "normal",textAlign = "center"),
+      aggregate = "sum", align = "right", width = 90, footer = function(values) sprintf("%.0f", sum(values))),
+    
+    kq8x = colDef(name = "Giá trị", headerStyle = list(color = "black", background = "#C8E2B1", whiteSpace = "normal",textAlign = "center"),
+      aggregate = "sum", align = "right", width = 100, format = colFormat(digits = 0, separators = TRUE), footer = function(values) sprintf("%s", format(sum(values), big.mark = ",", digits = 2L))),
+    
+    kq9x = colDef(name = "Số lượng",headerStyle = list(color = "black", background = "#C8E2B1", whiteSpace = "normal",textAlign = "center"),
+      aggregate = "sum", align = "right", width = 90, footer = function(values) sprintf("%.0f", sum(values))),
+    
+    kq10x = colDef(name = "Giá trị",headerStyle = list(color = "black", background = "#C8E2B1", whiteSpace = "normal",textAlign = "center"),
+      aggregate = "sum", align = "right", width = 100, format = colFormat(digits = 0, separators = TRUE), footer = function(values) sprintf("%s", format(sum(values), big.mark = ",", digits = 2L))),
+    
+    kq11x = colDef(name = "Số lượng",headerStyle = list(color = "black", background = "#C8E2B1", whiteSpace = "normal",textAlign = "center"),
+      aggregate = "sum", align = "right", width = 100, footer = function(values) sprintf("%.0f", sum(values))),
+    
+    kq12x = colDef(name = "Giá trị",headerStyle = list(color = "black", background = "#C8E2B1", whiteSpace = "normal",textAlign = "center"),
+      aggregate = "sum", align = "right", width = 100, format = colFormat(digits = 0, separators = TRUE), footer = function(values) sprintf("%s", format(sum(values), big.mark = ",", digits = 2L))),
+  
+    kq13x = colDef(name = "Số lượng",headerStyle = list(color = "black", background = "#BFCAE6", whiteSpace = "normal",textAlign = "center"),
+      aggregate = "sum", align = "right", width = 100, footer = function(values) sprintf("%.0f", sum(values))),
+    
+    kq14x = colDef(name = "Giá trị",headerStyle = list(color = "black", background = "#BFCAE6", whiteSpace = "normal",textAlign = "center"),
+      aggregate = "sum", align = "right", width = 100, format = colFormat(digits = 0, separators = TRUE), footer = function(values) sprintf("%s", format(sum(values), big.mark = ",", digits = 2L))),
+  
+    kq15x = colDef(name = "Số lượng",headerStyle = list(color = "black", background = "#BFCAE6", whiteSpace = "normal",textAlign = "center"),
+      aggregate = "sum", align = "right", width = 100, footer = function(values) sprintf("%.0f", sum(values))),
+    
+    kq16x = colDef(name = "Giá trị",headerStyle = list(color = "black", background = "#BFCAE6", whiteSpace = "normal",textAlign = "center"),
+      aggregate = "sum", align = "right", width = 100, format = colFormat(digits = 0, separators = TRUE), footer = function(values) sprintf("%s", format(sum(values), big.mark = ",", digits = 2L))),
+  
+    kq17x = colDef(name = "Số lượng",headerStyle = list(color = "black", background = "#BFCAE6", whiteSpace = "normal",textAlign = "center"),
+      aggregate = "sum", align = "right", width = 100, footer = function(values) sprintf("%.0f", sum(values))),
+    
+    kq18x = colDef(name = "Giá trị",headerStyle = list(color = "black", background = "#BFCAE6", whiteSpace = "normal",textAlign = "center"),
+      aggregate = "sum", align = "right", width = 100, format = colFormat(digits = 0, separators = TRUE), footer = function(values) sprintf("%s", format(sum(values), big.mark = ",", digits = 2L)))
+  
+
+  )
+)))
+```
+
+```{r, warning=FALSE, message=FALSE, results = 'hide', echo = FALSE}
+kq1x <- unlist(bc_tiendo_cnct[1])
+kq2x <- unlist(bc_tiendo_cnct[2])
+kq3x <- accounting(unlist(bc_tiendo_cnct[c(1:nrow(bc_tiendo_cnct)),3]), digits = 2L, format = "d", big.mark = ",")
+kq4x <- accounting(unlist(bc_tiendo_cnct[c(1:nrow(bc_tiendo_cnct)),4]), digits = 2L, format = "d", big.mark = ",")
+kq5x <- accounting(unlist(bc_tiendo_cnct[c(1:nrow(bc_tiendo_cnct)),5]), digits = 2L, format = "d", big.mark = ",")
+kq6x <- accounting(unlist(bc_tiendo_cnct[c(1:nrow(bc_tiendo_cnct)),6]), digits = 2L, format = "d", big.mark = ",")
+kq7x <- accounting(unlist(bc_tiendo_cnct[c(1:nrow(bc_tiendo_cnct)),7]), digits = 2L, format = "d", big.mark = ",")
+kq8x <- accounting(unlist(bc_tiendo_cnct[c(1:nrow(bc_tiendo_cnct)),8]), digits = 2L, format = "d", big.mark = ",")
+kq9x <- accounting(unlist(bc_tiendo_cnct[c(1:nrow(bc_tiendo_cnct)),9]), digits = 2L, format = "d", big.mark = ",")
+kq10x <- accounting(unlist(bc_tiendo_cnct[c(1:nrow(bc_tiendo_cnct)),10]), digits = 2L, format = "d", big.mark = ",")
+kq11x <- accounting(unlist(bc_tiendo_cnct[c(1:nrow(bc_tiendo_cnct)),11]), digits = 2L, format = "d", big.mark = ",")
+kq12x <- accounting(unlist(bc_tiendo_cnct[c(1:nrow(bc_tiendo_cnct)),12]), digits = 2L, format = "d", big.mark = ",")
+
+bc_tiendo_cnct_tb <- data.frame(kq1x,kq2x, kq3x, kq4x,kq5x,kq6x,kq7x,kq8x,kq9x, kq10x,kq11x,kq12x)
+bc_tiendo_cnct_tb[3:12] <- lapply(bc_tiendo_cnct_tb[3:12], as.numeric)
+rownames(bc_tiendo_cnct_tb) <- NULL
+```
+
+```{r,out.width = '150%', echo = FALSE, warning=FALSE, message=FALSE}
+library(crosstalk)
+library(reactable)
+shared_bc_tiendo_cnct_tb <- SharedData$new(bc_tiendo_cnct_tb)
+
+shiny::fluidRow(
+  shiny::column(
+    9,
+    reactable(shared_bc_tiendo_cnct_tb, minRows = 3,width = 1860, height = "auto", pagination = FALSE, groupBy = "kq2x", 
+              columnGroups = list(
+    colGroup(paste0("Tổng DK DT T", thang_n), columns = c("kq3x", "kq4x"), sticky = "left", headerStyle = list(color = "white", background = "#F56222", whiteSpace = "normal",textAlign = "center")),
+    colGroup("Chưa thi công", columns = c("kq5x", "kq6x"), sticky = "left", headerStyle = list(color = "white", background = "#F56222", whiteSpace = "normal",textAlign = "center")),
+    colGroup("Đang thi công", columns = c("kq7x", "kq8x"), sticky = "left", headerStyle = list(color = "white", background = "#3333CC", whiteSpace = "normal",textAlign = "center")),
+     colGroup("Thi công xong", columns = c("kq9x", "kq10x"), sticky = "left", headerStyle = list(color = "white", background = "#009900", whiteSpace = "normal",textAlign = "center")),
+     colGroup("Chưa điền tiến độ", columns = c( "kq11x", "kq12x"), sticky = "left", headerStyle = list(color = "white", background = "#CC00FF", whiteSpace = "normal",textAlign = "center"))
+  ),
+  resizable = TRUE,
+  wrap = FALSE,
+  searchable = TRUE,
+  bordered = TRUE, highlight = TRUE, style = list(fontSize = "16px"),
+  rowStyle = JS("
+    function(rowInfo, state) {
+      // Kiểm tra có subRows không → group row
+      if (rowInfo.subRows && rowInfo.subRows.length > 0) {
+        return {
+          backgroundColor: '#FFFFFF',  // group row: trắng
+          fontWeight: 'bold',
+          color: '#000000',
+          borderLeft: '2px solid transparent',
+          transition: 'background-color 0.2s ease'
+        };
+      } else {
+        return {
+          borderLeft: '2px solid #ffa62d',
+          backgroundColor: '#f5f5f5',   // subrows: xám nhạt
+          transition: 'background-color 0.2s ease'
+        };
+      }
+    }
+  "), 
+  theme = reactableTheme(
+  headerStyle = list(background = "#F56222"),
+  rowStyle = list(
+    `&:hover` = list(
+      backgroundColor = "#FFE4CC !important",
+      cursor = "pointer"
+    )
+  )
+),
+  defaultColDef = colDef(
+    #headerStyle = list(color = "black", background = "#F5DEB3", whiteSpace = "normal",textAlign = "center"),
+    footerStyle = list(fontWeight = "bold", color = "#B22222")
+  ),
+  defaultSorted = c("kq1x","kq2x"),
+  striped = FALSE,
+  columns = list(
+    
+    kq1x = colDef(name = "Mã tỉnh", headerStyle = list(color = "black", background = "#F5DEB3", whiteSpace = "normal",textAlign = "center"),
+                 aggregate = JS("
+        function(values, rows) {
+          return values.join(', ')
+        }
+      "),
+      aggregated = JS("
+        function(cellInfo) {
+          return React.createElement('span', {
+            title: cellInfo.value,
+            style: {cursor: 'help', fontWeight: 'bold'},
+          }, cellInfo.value);
+        }
+      "),
+      # Visual feedback khi hover
+      style  = JS("
+    function(rowInfo, state) {
+      // Kiểm tra có subRows không → group row
+      if (rowInfo.subRows && rowInfo.subRows.length > 0) {
+        return {
+          cursor: 'help',  // group row: trắng
+          fontWeight: 'bold',
+          backgroundColor: '#f5f5f5',
+          textDecoration: 'underline dotted'
+        };
+      } else {
+        return {
+          backgroundColor: '#f5f5f5'   // subrows: xám nhạt
+        };
+      }
+    }
+  "),
+     align = "left", width = 100, footer = "Tổng"),
+    kq2x = colDef(name = "AM", headerStyle = list(color = "black", background = "#F5DEB3", whiteSpace = "normal",textAlign = "center"),
+                  cell = JS("
+        function(cellInfo) {
+          // Add a tooltip to the grouped row header
+          return '<span title=\"Group ' + cellInfo.value + '\">' + cellInfo.value + '</span>'
+        }
+      "),
+      html = TRUE,
+      aggregate = "count", align = "left", width = 150),
+  
+    kq3x = colDef(name = "Số lượng", headerStyle = list(color = "black", background = "#F5DEB3", whiteSpace = "normal",textAlign = "center"),
+      aggregate = "sum", align = "right", width = 90, footer = function(values) sprintf("%.0f", sum(values))),
+    
+    kq4x = colDef(name = "Giá trị", headerStyle = list(color = "black", background = "#F5DEB3", whiteSpace = "normal",textAlign = "center"),
+      aggregate = "sum", align = "right", width = 100, format = colFormat(digits = 0, separators = TRUE), footer = function(values) sprintf("%s", format(sum(values), big.mark = ",", digits = 2L))),
+    
+    kq5x = colDef(name = "Số lượng", headerStyle = list(color = "black", background = "#F5DEB3", whiteSpace = "normal",textAlign = "center"),
+      aggregate = "sum", align = "right", width = 90, footer = function(values) sprintf("%.0f", sum(values))),
+    
+    kq6x = colDef(name = "Giá trị", headerStyle = list(color = "black", background = "#F5DEB3", whiteSpace = "normal",textAlign = "center"),
+      aggregate = "sum", align = "right", width = 100, format = colFormat(digits = 0, separators = TRUE), footer = function(values) sprintf("%s", format(sum(values), big.mark = ",", digits = 2L))),
+    
+    kq7x = colDef(name = "Số lượng", headerStyle = list(color = "black", background = "#BFCAE6", whiteSpace = "normal",textAlign = "center"),
+      aggregate = "sum", align = "right", width = 90, footer = function(values) sprintf("%.0f", sum(values))),
+    
+    kq8x = colDef(name = "Giá trị", headerStyle = list(color = "black", background = "#BFCAE6", whiteSpace = "normal",textAlign = "center"),
+      aggregate = "sum", align = "right", width = 100, format = colFormat(digits = 0, separators = TRUE), footer = function(values) sprintf("%s", format(sum(values), big.mark = ",", digits = 2L))),
+    
+    kq9x = colDef(name = "Số lượng",headerStyle = list(color = "black", background = "#C8E2B1", whiteSpace = "normal",textAlign = "center"),
+      aggregate = "sum", align = "right", width = 90, footer = function(values) sprintf("%.0f", sum(values))),
+    
+    kq10x = colDef(name = "Giá trị",headerStyle = list(color = "black", background = "#C8E2B1", whiteSpace = "normal",textAlign = "center"),
+      aggregate = "sum", align = "right", width = 100, format = colFormat(digits = 0, separators = TRUE), footer = function(values) sprintf("%s", format(sum(values), big.mark = ",", digits = 2L))),
+    
+    kq11x = colDef(name = "Số lượng",headerStyle = list(color = "black", background = "#E8D3E3", whiteSpace = "normal",textAlign = "center"),
+      aggregate = "sum", align = "right", width = 100, footer = function(values) sprintf("%.0f", sum(values))),
+    
+    kq12x = colDef(name = "Giá trị",headerStyle = list(color = "black", background = "#E8D3E3", whiteSpace = "normal",textAlign = "center"),
+      aggregate = "sum", align = "right", width = 100, format = colFormat(digits = 0, separators = TRUE), footer = function(values) sprintf("%s", format(sum(values), big.mark = ",", digits = 2L)))
+  
+
+  )
+)))
+```
+
+#### <span style="color: #C35817;font-family: cambria;">**2.2. Số HĐ Thi công xong theo ngày**</span>
+```{r, warning=FALSE, message=FALSE, results = 'hide', echo = FALSE}
+b2c_aio1 %>%
+  filter(!is.na(cn_ngaybatdau)) %>%
+  group_by(cn_ngaybatdau) %>%
+  summarise(so_hd = sum(!is.na(ma_hd), na.rm = TRUE),
+            gtri = round(sum(gtri[!is.na(ma_hd)], na.rm = TRUE)/10^6,0))-> bc_ngaybatdau
+
+b2c_aio1 %>%
+  filter(!is.na(ngay_ht)) %>%
+  group_by(ngay_ht) %>%
+  summarise(so_hd = sum(!is.na(ma_hd), na.rm = TRUE),
+            gtri = round(sum(gtri[!is.na(ma_hd)], na.rm = TRUE)/10^6,0))-> bc_lendoanhthu
+
+
+```
+
+```{r,out.width = '120%',fig.width=7, fig.height=4, echo = FALSE, warning=FALSE, message=FALSE}
+highchart() %>% 
+  hc_chart(type = "column") %>%
+  hc_xAxis(
+    categories = bc_ngaybatdau$cn_ngaybatdau,
+    labels = list(style = list(fontSize = "12px", fontFamily = "cambria"))
+  ) %>%
+  hc_title(
+    text = "Quá trình bắt đầu thi công theo ngày",
+    margin = 20,
+    align = "center",
+    style = list(color = "black", fontWeight = "bold", fontFamily = "cambria", fontSize = "20px")
+  ) %>%
+  hc_yAxis_multiples(
+    list(
+      lineWidth = 3,
+      title = list(text = "Số HĐ bắt đầu thi công", style = list(fontWeight = "bold", fontSize = "15px", fontFamily = "cambria")),
+      labels = list(style = list(fontSize = "12px", fontFamily = "cambria"))
+    )
+  ) %>%
+  hc_add_series(
+    name = "Số HĐ bắt đầu thi công",
+    data = round(bc_lendoanhthu$so_hd, 0),
+    type = "spline",
+    yAxis = 0,  # ← sửa từ 1 thành 0
+    dataLabels = list(enabled = TRUE, format = "{y}")
+  ) %>%
+  hc_tooltip(
+    headerFormat = "<b>{point.key}</b><br>",
+    pointFormat = "{series.name}: {point.y}"
+  ) %>%
+  hc_colors(c("#645889")) %>%
+  hc_legend(
+    labels = list(style = list(color = "black", fontWeight = "bold", fontFamily = "cambria", fontSize = "20px"))
+  ) %>%
+  hc_exporting(enabled = TRUE, filename = "custom-file-name")
+```
+
+```{r,out.width = '120%',fig.width=7, fig.height=4, echo = FALSE, warning=FALSE, message=FALSE}
+highchart() %>% 
+  hc_chart(type = "column") %>%
+  hc_xAxis(
+    categories = bc_lendoanhthu$ngay_ht,
+    labels = list(style = list(fontSize = "12px", fontFamily = "cambria"))
+  ) %>%
+  hc_title(
+    text = "Quá trình lên doanh thu theo ngày",
+    margin = 20,
+    align = "center",
+    style = list(color = "black", fontWeight = "bold", fontFamily = "cambria", fontSize = "20px")
+  ) %>%
+  hc_yAxis_multiples(
+    list(
+      lineWidth = 3,
+      title = list(text = "Số HĐ lên DT", style = list(fontWeight = "bold", fontSize = "15px", fontFamily = "cambria")),
+      labels = list(style = list(fontSize = "12px", fontFamily = "cambria"))
+    )
+  ) %>%
+  hc_add_series(
+    name = "Số HĐ lên DT",
+    data = round(bc_lendoanhthu$so_hd, 0),
+    type = "spline",
+    yAxis = 0,  # ← sửa từ 1 thành 0
+    dataLabels = list(enabled = TRUE, format = "{y}")
+  ) %>%
+  hc_tooltip(
+    headerFormat = "<b>{point.key}</b><br>",
+    pointFormat = "{series.name}: {point.y}"
+  ) %>%
+  hc_colors(c("#645889")) %>%
+  hc_legend(
+    labels = list(style = list(color = "black", fontWeight = "bold", fontFamily = "cambria", fontSize = "20px"))
+  ) %>%
+  hc_exporting(enabled = TRUE, filename = "custom-file-name")
+```
+
+### <span style="color: #C35817;font-family: cambria;">**3. Tiến độ thi công HĐ dự kiến lên DT tháng ** <strong>`r thang_n`</strong></span>
 ```{r, warning=FALSE, message=FALSE, results = 'hide', echo = FALSE}
 b2c_aio1 %>%
   filter(thang_dk_DT == thang_n) %>%
