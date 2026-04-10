@@ -939,13 +939,13 @@ shiny::fluidRow(
 #### <span style="color: #C35817;font-family: cambria;">**2.2. Số HĐ Thi công xong theo ngày**</span>
 ```{r, warning=FALSE, message=FALSE, results = 'hide', echo = FALSE}
 b2c_aio1 %>%
-  filter(!is.na(cn_ngaybatdau)) %>%
+  filter(!is.na(cn_ngaybatdau) & cn_ngaybatdau <= Sys.Date()) %>%
   group_by(cn_ngaybatdau) %>%
   summarise(so_hd = sum(!is.na(ma_hd), na.rm = TRUE),
             gtri = round(sum(gtri[!is.na(ma_hd)], na.rm = TRUE)/10^6,0))-> bc_ngaybatdau
 
 b2c_aio1 %>%
-  filter(!is.na(cn_ngaythicongxong)) %>%
+  filter(!is.na(cn_ngaythicongxong) & cn_ngaythicongxong <= Sys.Date()) %>%
   group_by(cn_ngaythicongxong) %>%
   summarise(so_hd = sum(!is.na(ma_hd), na.rm = TRUE),
             gtri = round(sum(gtri[!is.na(ma_hd)], na.rm = TRUE)/10^6,0))-> bc_lendoanhthu
