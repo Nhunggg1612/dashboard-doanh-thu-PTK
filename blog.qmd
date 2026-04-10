@@ -553,26 +553,29 @@ b2c_aio1 %>%
   group_by(ma_tinh, am) %>%
   summarise(so_ton = sum(!is.na(ma_hd)),
             gtri_ton = sum(gtri[!is.na(ma_hd)], na.rm = TRUE)/10^6,
-            so_dk = sum(!is.na(ma_hd) & cn_thangdk == thang_n, na.rm = TRUE),
-            gtri_dk = round(sum(gtri[!is.na(ma_hd) & cn_thangdk == thang_n], na.rm = TRUE)/10^6,0),
-            so_comatbang = sum(!is.na(ma_hd) & cn_matbang == "Đã đảm bảo MB", na.rm = TRUE),
-            gtri_comatbang = round(sum(gtri[!is.na(ma_hd) & cn_matbang == "Đã đảm bảo MB"], na.rm = TRUE)/10^6,0),
-            so_komatbang = sum(!is.na(ma_hd) & cn_matbang == "Chưa đảm bảo MB", na.rm = TRUE),
-            gtri_komatbang = round(sum(gtri[!is.na(ma_hd) & cn_matbang == "Chưa đảm bảo MB"], na.rm = TRUE)/10^6,0),
-            so_kodienmatbang = sum(!is.na(ma_hd) & is.na(cn_matbang), na.rm = TRUE),
-            gtri_kodienmatbang = round(sum(gtri[!is.na(ma_hd) & is.na(cn_matbang)], na.rm = TRUE)/10^6,0),
+            so_tamung = sum(!is.na(ma_hd) & so_ngau_tamung == "Đã tạm ứng đủ", na.rm = TRUE),
+            gtri_tamung = round(sum(gtri[!is.na(ma_hd) & so_ngau_tamung == "Đã tạm ứng đủ"], na.rm = TRUE)/10^6,0),
+            so_comatbang = sum(!is.na(ma_hd) & so_ngau_tamung == "Đã tạm ứng đủ" & cn_matbang == "Đã đảm bảo MB", na.rm = TRUE),
+            gtri_comatbang = round(sum(gtri[!is.na(ma_hd) & so_ngau_tamung == "Đã tạm ứng đủ" & cn_matbang == "Đã đảm bảo MB"], na.rm = TRUE)/10^6,0),
+            so_komatbang = sum(!is.na(ma_hd) & so_ngau_tamung == "Đã tạm ứng đủ" & cn_matbang == "Chưa đảm bảo MB", na.rm = TRUE),
+            gtri_komatbang = round(sum(gtri[!is.na(ma_hd) & so_ngau_tamung == "Đã tạm ứng đủ" & so_ngau_tamung == "Đã tạm ứng đủ" & cn_matbang == "Chưa đảm bảo MB"], na.rm = TRUE)/10^6,0),
+            so_kodienmatbang = sum(!is.na(ma_hd) & so_ngau_tamung == "Đã tạm ứng đủ" & is.na(cn_matbang), na.rm = TRUE),
+            gtri_kodienmatbang = round(sum(gtri[!is.na(ma_hd) & so_ngau_tamung == "Đã tạm ứng đủ" & is.na(cn_matbang)], na.rm = TRUE)/10^6,0),
             
-            so_covattu = sum(!is.na(ma_hd) & cn_hanghoa == "Đã đủ vật tư", na.rm = TRUE),
-            gtri_covattu = round(sum(gtri[!is.na(ma_hd) & cn_hanghoa == "Đã đủ vật tư"], na.rm = TRUE)/10^6,0),
-            so_kovattu = sum(!is.na(ma_hd) & cn_hanghoa == "Thiếu vật tư", na.rm = TRUE),
-            gtri_kovattu = round(sum(gtri[!is.na(ma_hd) & cn_hanghoa == "Thiếu vật tư"], na.rm = TRUE)/10^6,0),
-            so_kodienvattu = sum(!is.na(ma_hd) & is.na(cn_hanghoa), na.rm = TRUE),
-            gtri_kodienvattu = round(sum(gtri[!is.na(ma_hd) & is.na(cn_hanghoa)], na.rm = TRUE)/10^6,0)
+            so_covattu = sum(!is.na(ma_hd) & so_ngau_tamung == "Đã tạm ứng đủ" & cn_hanghoa == "Đã đủ vật tư", na.rm = TRUE),
+            gtri_covattu = round(sum(gtri[!is.na(ma_hd) & so_ngau_tamung == "Đã tạm ứng đủ" & cn_hanghoa == "Đã đủ vật tư"], na.rm = TRUE)/10^6,0),
+            so_kovattu = sum(!is.na(ma_hd) & so_ngau_tamung == "Đã tạm ứng đủ" & cn_hanghoa == "Thiếu vật tư", na.rm = TRUE),
+            gtri_kovattu = round(sum(gtri[!is.na(ma_hd) & so_ngau_tamung == "Đã tạm ứng đủ" & cn_hanghoa == "Thiếu vật tư"], na.rm = TRUE)/10^6,0),
+            so_kodienvattu = sum(!is.na(ma_hd) & so_ngau_tamung == "Đã tạm ứng đủ" & is.na(cn_hanghoa), na.rm = TRUE),
+            gtri_kodienvattu = round(sum(gtri[!is.na(ma_hd) & so_ngau_tamung == "Đã tạm ứng đủ" & is.na(cn_hanghoa)], na.rm = TRUE)/10^6,0)
             ) -> bc_dambao_cnct
 
 b2c_aio1 %>%
   group_by(ma_tinh, am) %>%
-  summarise(so_dk = sum(!is.na(ma_hd) & cn_thangdk == thang_n, na.rm = TRUE),
+  summarise(so_dk_am = sum(!is.na(ma_hd) & thang_dk_DT == thang_n, na.rm = TRUE),
+            gtri_dk_am = round(sum(gtri[!is.na(ma_hd) & thang_dk_DT == thang_n], na.rm = TRUE)/10^6,0),
+            
+            so_dk = sum(!is.na(ma_hd) & cn_thangdk == thang_n, na.rm = TRUE),
             gtri_dk = round(sum(gtri[!is.na(ma_hd) & cn_thangdk == thang_n], na.rm = TRUE)/10^6,0),
             so_chuathicong = sum(!is.na(ma_hd) & cn_tiendo == "Chưa thi công", na.rm = TRUE),
             gtri_chuathicong = round(sum(gtri[!is.na(ma_hd) & cn_tiendo == "Chưa thi công"], na.rm = TRUE)/10^6,0),
@@ -624,7 +627,7 @@ shiny::fluidRow(
     reactable(shared_bc_dambao_cnct_tb, minRows = 3,width = 1860, height = "auto", pagination = FALSE, groupBy = "kq2x", 
               columnGroups = list(
     colGroup("Tổng NV tồn", columns = c("kq3x", "kq4x"), sticky = "left", headerStyle = list(color = "white", background = "#F56222", whiteSpace = "normal",textAlign = "center")),
-    colGroup(paste0("Tổng DK DT T", thang_n), columns = c("kq5x", "kq6x"), sticky = "left", headerStyle = list(color = "white", background = "#F56222", whiteSpace = "normal",textAlign = "center")),
+    colGroup("HĐ đã tạm ứng đủ", columns = c("kq5x", "kq6x"), sticky = "left", headerStyle = list(color = "white", background = "#F56222", whiteSpace = "normal",textAlign = "center")),
     colGroup("Đã đảm bảo MB", columns = c("kq7x", "kq8x"), sticky = "left", headerStyle = list(color = "white", background = "#009900", whiteSpace = "normal",textAlign = "center")),
      colGroup("Chưa đảm bảo MB", columns = c("kq9x", "kq10x"), sticky = "left", headerStyle = list(color = "white", background = "#009900", whiteSpace = "normal",textAlign = "center")),
      colGroup("Chưa điền MB", columns = c( "kq11x", "kq12x"), sticky = "left", headerStyle = list(color = "white", background = "#009900", whiteSpace = "normal",textAlign = "center")),
@@ -782,9 +785,11 @@ kq9x <- accounting(unlist(bc_tiendo_cnct[c(1:nrow(bc_tiendo_cnct)),9]), digits =
 kq10x <- accounting(unlist(bc_tiendo_cnct[c(1:nrow(bc_tiendo_cnct)),10]), digits = 2L, format = "d", big.mark = ",")
 kq11x <- accounting(unlist(bc_tiendo_cnct[c(1:nrow(bc_tiendo_cnct)),11]), digits = 2L, format = "d", big.mark = ",")
 kq12x <- accounting(unlist(bc_tiendo_cnct[c(1:nrow(bc_tiendo_cnct)),12]), digits = 2L, format = "d", big.mark = ",")
+kq13x <- accounting(unlist(bc_tiendo_cnct[c(1:nrow(bc_tiendo_cnct)),13]), digits = 2L, format = "d", big.mark = ",")
+kq14x <- accounting(unlist(bc_tiendo_cnct[c(1:nrow(bc_tiendo_cnct)),14]), digits = 2L, format = "d", big.mark = ",")
 
-bc_tiendo_cnct_tb <- data.frame(kq1x,kq2x, kq3x, kq4x,kq5x,kq6x,kq7x,kq8x,kq9x, kq10x,kq11x,kq12x)
-bc_tiendo_cnct_tb[3:12] <- lapply(bc_tiendo_cnct_tb[3:12], as.numeric)
+bc_tiendo_cnct_tb <- data.frame(kq1x,kq2x, kq3x, kq4x,kq5x,kq6x,kq7x,kq8x,kq9x, kq10x,kq11x,kq12x,kq13x,kq14x)
+bc_tiendo_cnct_tb[3:14] <- lapply(bc_tiendo_cnct_tb[3:14], as.numeric)
 rownames(bc_tiendo_cnct_tb) <- NULL
 ```
 
@@ -798,11 +803,13 @@ shiny::fluidRow(
     9,
     reactable(shared_bc_tiendo_cnct_tb, minRows = 3,width = 1860, height = "auto", pagination = FALSE, groupBy = "kq2x", 
               columnGroups = list(
-    colGroup(paste0("Tổng DK DT T", thang_n), columns = c("kq3x", "kq4x"), sticky = "left", headerStyle = list(color = "white", background = "#F56222", whiteSpace = "normal",textAlign = "center")),
-    colGroup("Chưa thi công", columns = c("kq5x", "kq6x"), sticky = "left", headerStyle = list(color = "white", background = "#F56222", whiteSpace = "normal",textAlign = "center")),
-    colGroup("Đang thi công", columns = c("kq7x", "kq8x"), sticky = "left", headerStyle = list(color = "white", background = "#3333CC", whiteSpace = "normal",textAlign = "center")),
-     colGroup("Thi công xong", columns = c("kq9x", "kq10x"), sticky = "left", headerStyle = list(color = "white", background = "#009900", whiteSpace = "normal",textAlign = "center")),
-     colGroup("Chưa điền tiến độ", columns = c( "kq11x", "kq12x"), sticky = "left", headerStyle = list(color = "white", background = "#CC00FF", whiteSpace = "normal",textAlign = "center"))
+    colGroup(paste0("AM DK DT T", thang_n), columns = c("kq3x", "kq4x"), sticky = "left", headerStyle = list(color = "white", background = "#F56222", whiteSpace = "normal",textAlign = "center")),
+    colGroup(paste0("CNCT DK DT T", thang_n), columns = c("kq5x", "kq6x"), sticky = "left", headerStyle = list(color = "white", background = "#F56222", whiteSpace = "normal",textAlign = "center")),
+    
+    colGroup("Chưa thi công", columns = c("kq7x", "kq8x"), sticky = "left", headerStyle = list(color = "white", background = "#3333CC", whiteSpace = "normal",textAlign = "center")),
+    colGroup("Đang thi công", columns = c("kq9x", "kq10x"), sticky = "left", headerStyle = list(color = "white", background = "#3333CC", whiteSpace = "normal",textAlign = "center")),
+     colGroup("Thi công xong", columns = c( "kq11x", "kq12x"), sticky = "left", headerStyle = list(color = "white", background = "#009900", whiteSpace = "normal",textAlign = "center")),
+     colGroup("Chưa điền tiến độ", columns = c( "kq13x", "kq14x"), sticky = "left", headerStyle = list(color = "white", background = "#CC00FF", whiteSpace = "normal",textAlign = "center"))
   ),
   resizable = TRUE,
   wrap = FALSE,
@@ -906,16 +913,22 @@ shiny::fluidRow(
     kq8x = colDef(name = "Giá trị", headerStyle = list(color = "black", background = "#BFCAE6", whiteSpace = "normal",textAlign = "center"),
       aggregate = "sum", align = "right", width = 100, format = colFormat(digits = 0, separators = TRUE), footer = function(values) sprintf("%s", format(sum(values), big.mark = ",", digits = 2L))),
     
-    kq9x = colDef(name = "Số lượng",headerStyle = list(color = "black", background = "#C8E2B1", whiteSpace = "normal",textAlign = "center"),
+    kq9x = colDef(name = "Số lượng",headerStyle = list(color = "black", background = "#BFCAE6", whiteSpace = "normal",textAlign = "center"),
       aggregate = "sum", align = "right", width = 90, footer = function(values) sprintf("%.0f", sum(values))),
     
-    kq10x = colDef(name = "Giá trị",headerStyle = list(color = "black", background = "#C8E2B1", whiteSpace = "normal",textAlign = "center"),
+    kq10x = colDef(name = "Giá trị",headerStyle = list(color = "black", background = "#BFCAE6", whiteSpace = "normal",textAlign = "center"),
       aggregate = "sum", align = "right", width = 100, format = colFormat(digits = 0, separators = TRUE), footer = function(values) sprintf("%s", format(sum(values), big.mark = ",", digits = 2L))),
     
-    kq11x = colDef(name = "Số lượng",headerStyle = list(color = "black", background = "#E8D3E3", whiteSpace = "normal",textAlign = "center"),
+    kq11x = colDef(name = "Số lượng",headerStyle = list(color = "black", background = "#C8E2B1", whiteSpace = "normal",textAlign = "center"),
       aggregate = "sum", align = "right", width = 100, footer = function(values) sprintf("%.0f", sum(values))),
     
-    kq12x = colDef(name = "Giá trị",headerStyle = list(color = "black", background = "#E8D3E3", whiteSpace = "normal",textAlign = "center"),
+    kq12x = colDef(name = "Giá trị",headerStyle = list(color = "black", background = "#C8E2B1", whiteSpace = "normal",textAlign = "center"),
+      aggregate = "sum", align = "right", width = 100, format = colFormat(digits = 0, separators = TRUE), footer = function(values) sprintf("%s", format(sum(values), big.mark = ",", digits = 2L))),
+  
+    kq13x = colDef(name = "Số lượng",headerStyle = list(color = "black", background = "#E8D3E3", whiteSpace = "normal",textAlign = "center"),
+      aggregate = "sum", align = "right", width = 100, footer = function(values) sprintf("%.0f", sum(values))),
+    
+    kq14x = colDef(name = "Giá trị",headerStyle = list(color = "black", background = "#E8D3E3", whiteSpace = "normal",textAlign = "center"),
       aggregate = "sum", align = "right", width = 100, format = colFormat(digits = 0, separators = TRUE), footer = function(values) sprintf("%s", format(sum(values), big.mark = ",", digits = 2L)))
   
 
@@ -932,8 +945,8 @@ b2c_aio1 %>%
             gtri = round(sum(gtri[!is.na(ma_hd)], na.rm = TRUE)/10^6,0))-> bc_ngaybatdau
 
 b2c_aio1 %>%
-  filter(!is.na(ngay_ht)) %>%
-  group_by(ngay_ht) %>%
+  filter(!is.na(cn_ngaythicongxong)) %>%
+  group_by(cn_ngaythicongxong) %>%
   summarise(so_hd = sum(!is.na(ma_hd), na.rm = TRUE),
             gtri = round(sum(gtri[!is.na(ma_hd)], na.rm = TRUE)/10^6,0))-> bc_lendoanhthu
 
@@ -986,7 +999,7 @@ highchart() %>%
     labels = list(style = list(fontSize = "12px", fontFamily = "cambria"))
   ) %>%
   hc_title(
-    text = "Quá trình lên doanh thu theo ngày",
+    text = "Quá trình thi công xong theo ngày",
     margin = 20,
     align = "center",
     style = list(color = "black", fontWeight = "bold", fontFamily = "cambria", fontSize = "20px")
