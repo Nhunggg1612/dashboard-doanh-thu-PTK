@@ -995,7 +995,7 @@ highchart() %>%
 highchart() %>% 
   hc_chart(type = "column") %>%
   hc_xAxis(
-    categories = bc_lendoanhthu$ngay_ht,
+    categories = bc_lendoanhthu$cn_ngaythicongxong,
     labels = list(style = list(fontSize = "12px", fontFamily = "cambria"))
   ) %>%
   hc_title(
