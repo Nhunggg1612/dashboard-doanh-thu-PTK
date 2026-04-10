@@ -905,13 +905,13 @@ shiny::fluidRow(
       aggregate = "sum", align = "right", width = 90, footer = function(values) sprintf("%.0f", sum(values))),
     
     kq6x = colDef(name = "Giá trị", headerStyle = list(color = "black", background = "#F5DEB3", whiteSpace = "normal",textAlign = "center"),
-      aggregate = "sum", align = "right", width = 100, format = colFormat(digits = 0, separators = TRUE), footer = function(values) sprintf("%s", format(sum(values), big.mark = ",", digits = 2L))),
+      aggregate = "sum", align = "right", width = 100, format = colFormat(digits = 0, separators = TRUE), footer = function(values) formatC(sum(values), format = "f", digits = 0, big.mark = ",")),
     
     kq7x = colDef(name = "Số lượng", headerStyle = list(color = "black", background = "#BFCAE6", whiteSpace = "normal",textAlign = "center"),
       aggregate = "sum", align = "right", width = 90, footer = function(values) sprintf("%.0f", sum(values))),
     
     kq8x = colDef(name = "Giá trị", headerStyle = list(color = "black", background = "#BFCAE6", whiteSpace = "normal",textAlign = "center"),
-      aggregate = "sum", align = "right", width = 100, format = colFormat(digits = 0, separators = TRUE), footer = function(values) sprintf("%s", format(sum(values), big.mark = ",", digits = 2L))),
+      aggregate = "sum", align = "right", width = 100, format = colFormat(digits = 0, separators = TRUE), footer = function(values) formatC(sum(values), format = "f", digits = 0, big.mark = ",")),
     
     kq9x = colDef(name = "Số lượng",headerStyle = list(color = "black", background = "#BFCAE6", whiteSpace = "normal",textAlign = "center"),
       aggregate = "sum", align = "right", width = 90, footer = function(values) sprintf("%.0f", sum(values))),
