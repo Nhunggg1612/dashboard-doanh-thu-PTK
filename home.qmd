@@ -287,7 +287,7 @@ shiny::fluidRow(
       aggregate = "sum", align = "right", width = 90, footer = function(values) sprintf("%.0f", sum(values))),
     
     kq4 = colDef(name = "Giá trị",
-      aggregate = "sum", align = "right", width = 100, format = colFormat(digits = 0, separators = TRUE), footer = function(values) formatC(sum(values), format = "f", digits = 0, big.mark = ","))),
+      aggregate = "sum", align = "right", width = 100, format = colFormat(digits = 0, separators = TRUE), footer = function(values) formatC(sum(values), format = "f", digits = 0, big.mark = ",")),
     
     kq5 = colDef(name = "Số lượng",
       aggregate = "sum", align = "right", width = 90, footer = function(values) sprintf("%.0f", sum(values))),
