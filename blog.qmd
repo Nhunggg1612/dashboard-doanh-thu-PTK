@@ -57,11 +57,11 @@ if (Sys.getenv("GCP_SERVICE_ACCOUNT") != "") {
   # Chạy local → đăng nhập thủ công
   gs4_auth()
 }
-sheet_url <- "https://docs.google.com/spreadsheets/d/12BlvL_Fxdubk5PL4G-pjX-c4_iQwiubVlknHCrAw5dw/edit?gid=904243310#gid=904243310"
+sheet_url <- "https://docs.google.com/spreadsheets/d/1-FhaD8Aa6oD09jQCUMk9u3CfIFyz2gyLyF2lNWYohl8/edit?gid=1614911787#gid=1614911787"
 b2c_aio <- read_sheet(sheet_url, sheet = "Chi tiết")
 
-b2c_aio1 <- b2c_aio[-c(1:4),c(1,2,3,10:20,22:27, 29:34, 36:44, 48, 53, 54, 56:68,51,79:80,82:83,85,86,78)]
-n_aio <- c("don_huy", "ma_tinh", "ma_hd", "gtri", "namthang_ky", "ngay_ky", "dich_vu", "thang_DT", "ngay_tam_ung", "gtri_tam_ung", "loai_pin", "ma_pin", "ten_pin", "so_pin", "ngay_cap_pin", "dambao_pin", "loai_inver", "ma_inver", "ten_inver", "so_inver", "ngay_cap_inver", "dambao_inver", "loai_acquy", "ma_acquy", "ten_acquy", "so_acquy", "ngay_cap_acquy", "dambao_acquy", "du_hang", "du_dk", "so_hd", "tyle_tamung", "am", "han_thicong", "so_ngau_tamung", "thang_dk_DT", "mat_bang", "quahan_thicong", "BG_VHKT", "tien_do", "ngay_thicong_xong", "ngay_BBNT", "vuong", "vuong_chitiet", "do_chacchan_VHKT", "ngay_dien_thicong", "ngay_BG_sang", "thang_ky", "nam_ky", "today_ngayBG", "today_ngaythicong", "chac_chan","cn_matbang", "cn_hanghoa", "cn_tiendo", "cn_thangdk", "cn_ngaybatdau", "cn_ngaythicongxong","ngay_ht")
+b2c_aio1 <- b2c_aio[-c(1:4),c(1,2,3,10:21,25:28, 30:35, 37:38, 42:44,46,50,52:53,59,65,68,71,72,75,76,77,78,82)]
+n_aio <- c("don_huy", "ma_tinh", "ma_hd", "gtri", "namthang_ky", "ngay_ky", "dich_vu", "thang_DT", "ngay_ht" ,"ngay_tam_ung", "gtri_tam_ung", "loai_pin", "ma_pin", "ten_pin", "so_pin", "loai_inver", "ma_inver", "ten_inver", "so_inver", "ngay_cap_inver", "dambao_inver", "loai_acquy", "ma_acquy", "ten_acquy", "so_acquy", "ngay_cap_acquy", "dambao_acquy", "Ngay_KD_BG", "Ngay_KT_nhan", "Ngay_KT_tuchoi1", "Ngay_KT_tuchoin", "TTQH", "KV", "am","tyle_tamung" ,"thang_dk_DT", "chac_chan","cn_matbang", "cn_hanghoa", "cn_tiendo", "cn_thangdk", "cn_ngaybatdau", "cn_ngaythicongxong","time_ky")
 colnames(b2c_aio1) <- n_aio
 
 #Chuyển các cột list định dạng giống ngày về date %m-%Y
@@ -151,11 +151,6 @@ now <- format(
 ### <span style="color: #C35817;font-family: cambria;">**1. Chi tiết theo tỉnh tiến độ HĐ dự kiến lên DT tháng ** <strong>`r thang_n`</strong></span>
 
 ```{r, warning=FALSE, message=FALSE, results = 'hide', echo = FALSE}
-b2c_aio1 <- b2c_aio1 %>%
-  mutate(am = case_when(
-   ma_tinh == "DTP" ~ "Sonln15",
-   TRUE ~ am
-  ))
 b2c_aio1 %>%
   filter(thang_dk_DT == thang_n) %>%
   group_by(ma_tinh, am) %>%
@@ -550,27 +545,29 @@ shiny::fluidRow(
 #### <span style="color: #C35817;font-family: cambria;">**2.1. Hiện trạng HĐ tồn và dự kiến DT**</span>
 ```{r, warning=FALSE, message=FALSE, results = 'hide', echo = FALSE}
 b2c_aio1 %>%
+  filter(!don_huy %in% c("Đề xuất hủy", "Hết hiệu lực")) %>%
   group_by(ma_tinh, am) %>%
   summarise(so_ton = sum(!is.na(ma_hd)),
             gtri_ton = sum(gtri[!is.na(ma_hd)], na.rm = TRUE)/10^6,
-            so_tamung = sum(!is.na(ma_hd) & so_ngau_tamung == "Đã tạm ứng đủ", na.rm = TRUE),
-            gtri_tamung = round(sum(gtri[!is.na(ma_hd) & so_ngau_tamung == "Đã tạm ứng đủ"], na.rm = TRUE)/10^6,0),
-            so_comatbang = sum(!is.na(ma_hd) & so_ngau_tamung == "Đã tạm ứng đủ" & cn_matbang == "Đã đảm bảo MB", na.rm = TRUE),
-            gtri_comatbang = round(sum(gtri[!is.na(ma_hd) & so_ngau_tamung == "Đã tạm ứng đủ" & cn_matbang == "Đã đảm bảo MB"], na.rm = TRUE)/10^6,0),
-            so_komatbang = sum(!is.na(ma_hd) & so_ngau_tamung == "Đã tạm ứng đủ" & cn_matbang == "Chưa đảm bảo MB", na.rm = TRUE),
-            gtri_komatbang = round(sum(gtri[!is.na(ma_hd) & so_ngau_tamung == "Đã tạm ứng đủ" & so_ngau_tamung == "Đã tạm ứng đủ" & cn_matbang == "Chưa đảm bảo MB"], na.rm = TRUE)/10^6,0),
-            so_kodienmatbang = sum(!is.na(ma_hd) & so_ngau_tamung == "Đã tạm ứng đủ" & is.na(cn_matbang), na.rm = TRUE),
-            gtri_kodienmatbang = round(sum(gtri[!is.na(ma_hd) & so_ngau_tamung == "Đã tạm ứng đủ" & is.na(cn_matbang)], na.rm = TRUE)/10^6,0),
+            so_tamung = sum(!is.na(ma_hd) & tyle_tamung >= 0.2, na.rm = TRUE),
+            gtri_tamung = round(sum(gtri[!is.na(ma_hd) & tyle_tamung >= 0.2], na.rm = TRUE)/10^6,0),
+            so_comatbang = sum(!is.na(ma_hd) & tyle_tamung >= 0.2 & cn_matbang == "Đã đảm bảo MB", na.rm = TRUE),
+            gtri_comatbang = round(sum(gtri[!is.na(ma_hd) & tyle_tamung >= 0.2 & cn_matbang == "Đã đảm bảo MB"], na.rm = TRUE)/10^6,0),
+            so_komatbang = sum(!is.na(ma_hd) & tyle_tamung >= 0.2 & cn_matbang == "Chưa đảm bảo MB", na.rm = TRUE),
+            gtri_komatbang = round(sum(gtri[!is.na(ma_hd) & tyle_tamung >= 0.2 & tyle_tamung >= 0.2 & cn_matbang == "Chưa đảm bảo MB"], na.rm = TRUE)/10^6,0),
+            so_kodienmatbang = sum(!is.na(ma_hd) & tyle_tamung >= 0.2 & is.na(cn_matbang), na.rm = TRUE),
+            gtri_kodienmatbang = round(sum(gtri[!is.na(ma_hd) & tyle_tamung >= 0.2 & is.na(cn_matbang)], na.rm = TRUE)/10^6,0),
             
-            so_covattu = sum(!is.na(ma_hd) & so_ngau_tamung == "Đã tạm ứng đủ" & cn_hanghoa == "Đã đủ vật tư", na.rm = TRUE),
-            gtri_covattu = round(sum(gtri[!is.na(ma_hd) & so_ngau_tamung == "Đã tạm ứng đủ" & cn_hanghoa == "Đã đủ vật tư"], na.rm = TRUE)/10^6,0),
-            so_kovattu = sum(!is.na(ma_hd) & so_ngau_tamung == "Đã tạm ứng đủ" & cn_hanghoa == "Thiếu vật tư", na.rm = TRUE),
-            gtri_kovattu = round(sum(gtri[!is.na(ma_hd) & so_ngau_tamung == "Đã tạm ứng đủ" & cn_hanghoa == "Thiếu vật tư"], na.rm = TRUE)/10^6,0),
-            so_kodienvattu = sum(!is.na(ma_hd) & so_ngau_tamung == "Đã tạm ứng đủ" & is.na(cn_hanghoa), na.rm = TRUE),
-            gtri_kodienvattu = round(sum(gtri[!is.na(ma_hd) & so_ngau_tamung == "Đã tạm ứng đủ" & is.na(cn_hanghoa)], na.rm = TRUE)/10^6,0)
+            so_covattu = sum(!is.na(ma_hd) & tyle_tamung >= 0.2 & cn_hanghoa == "Đã đủ vật tư", na.rm = TRUE),
+            gtri_covattu = round(sum(gtri[!is.na(ma_hd) & tyle_tamung >= 0.2 & cn_hanghoa == "Đã đủ vật tư"], na.rm = TRUE)/10^6,0),
+            so_kovattu = sum(!is.na(ma_hd) & tyle_tamung >= 0.2 & cn_hanghoa == "Thiếu vật tư", na.rm = TRUE),
+            gtri_kovattu = round(sum(gtri[!is.na(ma_hd) & tyle_tamung >= 0.2 & cn_hanghoa == "Thiếu vật tư"], na.rm = TRUE)/10^6,0),
+            so_kodienvattu = sum(!is.na(ma_hd) & tyle_tamung >= 0.2 & is.na(cn_hanghoa), na.rm = TRUE),
+            gtri_kodienvattu = round(sum(gtri[!is.na(ma_hd) & tyle_tamung >= 0.2 & is.na(cn_hanghoa)], na.rm = TRUE)/10^6,0)
             ) -> bc_dambao_cnct
 
 b2c_aio1 %>%
+  filter(!don_huy %in% c("Đề xuất hủy", "Hết hiệu lực")) %>%
   group_by(ma_tinh, am) %>%
   summarise(so_dk_am = sum(!is.na(ma_hd) & thang_dk_DT == thang_n, na.rm = TRUE),
             gtri_dk_am = round(sum(gtri[!is.na(ma_hd) & thang_dk_DT == thang_n], na.rm = TRUE)/10^6,0),
@@ -939,13 +936,13 @@ shiny::fluidRow(
 #### <span style="color: #C35817;font-family: cambria;">**2.2. Số HĐ Thi công xong theo ngày**</span>
 ```{r, warning=FALSE, message=FALSE, results = 'hide', echo = FALSE}
 b2c_aio1 %>%
-  filter(!is.na(cn_ngaybatdau) & cn_ngaybatdau <= Sys.Date()) %>%
+  filter(!is.na(cn_ngaybatdau) & cn_ngaybatdau <= Sys.Date() & cn_ngaybatdau >= floor_date(Sys.Date(), "month")) %>%
   group_by(cn_ngaybatdau) %>%
   summarise(so_hd = sum(!is.na(ma_hd), na.rm = TRUE),
             gtri = round(sum(gtri[!is.na(ma_hd)], na.rm = TRUE)/10^6,0))-> bc_ngaybatdau
 
 b2c_aio1 %>%
-  filter(!is.na(cn_ngaythicongxong) & cn_ngaythicongxong <= Sys.Date()) %>%
+  filter(!is.na(cn_ngaythicongxong) & cn_ngaythicongxong <= Sys.Date() & cn_ngaythicongxong >= floor_date(Sys.Date(), "month")) %>%
   group_by(cn_ngaythicongxong) %>%
   summarise(so_hd = sum(!is.na(ma_hd), na.rm = TRUE),
             gtri = round(sum(gtri[!is.na(ma_hd)], na.rm = TRUE)/10^6,0))-> bc_lendoanhthu
@@ -1029,279 +1026,195 @@ highchart() %>%
   hc_exporting(enabled = TRUE, filename = "custom-file-name")
 ```
 
-### <span style="color: #C35817;font-family: cambria;">**3. Tiến độ thi công HĐ dự kiến lên DT tháng ** <strong>`r thang_n`</strong></span>
+### <span style="color: #C35817;font-family: cambria;">**3. KPI AM cần điều hành** </span>
+#### <span style="color: #C35817;font-family: cambria;">**3.1. KPI ký BBBG HĐ đủ điều kiện (HĐ ký từ T4/2026 trở đi)**</span>
+
 ```{r, warning=FALSE, message=FALSE, results = 'hide', echo = FALSE}
 b2c_aio1 %>%
-  filter(thang_dk_DT == thang_n) %>%
-  summarise(so_hd = sum(!is.na(ma_hd)),
-            gtri_hd = sum(gtri[!is.na(ma_hd)], na.rm = TRUE)/10^6,
-            chi_tieu = paste0("Tổng dự kiến T", thang_n)
-            ) -> xbc_bangiao1
+  filter(!don_huy %in% c("Đề xuất hủy", "Hết hiệu lực")) %>%
+  filter(time_ky == "Ký sau T04/2026") %>%
+  group_by(ma_tinh, am) %>%
+  summarise(so_du_dk = sum(!is.na(ma_hd) & dich_vu  %in% "Dịch vụ" & tyle_tamung >= 0.2 & cn_matbang  %in% "Đã đảm bảo MB" & cn_hanghoa  %in% "Đã đủ vật tư"),
+            gtri_du_dk = sum(gtri[!is.na(ma_hd) & dich_vu == "Dịch vụ" & tyle_tamung >= 0.2 & cn_matbang == "Đã đảm bảo MB" & cn_hanghoa == "Đã đủ vật tư"], na.rm = TRUE)/10^6,
+            so_chua_BG = sum(!is.na(ma_hd) & dich_vu  %in% "Dịch vụ" & tyle_tamung >= 0.2 & cn_matbang  %in% "Đã đảm bảo MB" & cn_hanghoa  %in% "Đã đủ vật tư" & Ngay_KD_BG == "NULL"),
+            gtri_chua_BG = sum(gtri[!is.na(ma_hd) & dich_vu == "Dịch vụ" & tyle_tamung >= 0.2 & cn_matbang == "Đã đảm bảo MB" & cn_hanghoa == "Đã đủ vật tư"  & Ngay_KD_BG == "NULL"], na.rm = TRUE)/10^6,
+            so_da_BG = sum(!is.na(ma_hd) & dich_vu  %in% "Dịch vụ" & tyle_tamung >= 0.2 & cn_matbang  %in% "Đã đảm bảo MB" & cn_hanghoa  %in% "Đã đủ vật tư" & Ngay_KD_BG != "NULL"),
+            gtri_da_BG = sum(gtri[!is.na(ma_hd) & dich_vu == "Dịch vụ" & tyle_tamung >= 0.2 & cn_matbang == "Đã đảm bảo MB" & cn_hanghoa == "Đã đủ vật tư"  & Ngay_KD_BG != "NULL"], na.rm = TRUE)/10^6,
+            so_da_ky = sum(!is.na(ma_hd) & dich_vu  %in% "Dịch vụ" & tyle_tamung >= 0.2 & cn_matbang  %in% "Đã đảm bảo MB" & cn_hanghoa  %in% "Đã đủ vật tư" & Ngay_KD_BG != "NULL" & Ngay_KT_nhan != "NULL"),
+            gtri_da_ky = sum(gtri[!is.na(ma_hd) & dich_vu == "Dịch vụ" & tyle_tamung >= 0.2 & cn_matbang == "Đã đảm bảo MB" & cn_hanghoa == "Đã đủ vật tư"  & Ngay_KD_BG != "NULL" & Ngay_KT_nhan != "NULL"], na.rm = TRUE)/10^6,
+            so_da_tuchoi = sum(!is.na(ma_hd) & dich_vu  %in% "Dịch vụ" & tyle_tamung >= 0.2 & cn_matbang  %in% "Đã đảm bảo MB" & cn_hanghoa  %in% "Đã đủ vật tư" & Ngay_KD_BG != "NULL" & Ngay_KT_nhan == "NULL" & Ngay_KT_tuchoi1 != "NULL"),
+            gtri_da_tuchoi = sum(gtri[!is.na(ma_hd) & dich_vu == "Dịch vụ" & tyle_tamung >= 0.2 & cn_matbang == "Đã đảm bảo MB" & cn_hanghoa == "Đã đủ vật tư"  & Ngay_KD_BG != "NULL" & Ngay_KT_nhan == "NULL" & Ngay_KT_tuchoi1 != "NULL"], na.rm = TRUE)/10^6,
+            so_da_chuaky = sum(!is.na(ma_hd) & dich_vu  %in% "Dịch vụ" & tyle_tamung >= 0.2 & cn_matbang  %in% "Đã đảm bảo MB" & cn_hanghoa  %in% "Đã đủ vật tư" & Ngay_KD_BG != "NULL" & Ngay_KT_nhan == "NULL" & Ngay_KT_tuchoi1 == "NULL"),
+            gtri_da_chuaky = sum(gtri[!is.na(ma_hd) & dich_vu == "Dịch vụ" & tyle_tamung >= 0.2 & cn_matbang == "Đã đảm bảo MB" & cn_hanghoa == "Đã đủ vật tư"  & Ngay_KD_BG != "NULL" & Ngay_KT_nhan == "NULL" & Ngay_KT_tuchoi1 == "NULL"], na.rm = TRUE)/10^6
+            ) -> bc_ky_bbbg
 
-b2c_aio1 %>%
-  filter(thang_dk_DT == thang_n) %>%
-  summarise(so_hd = sum(!is.na(ma_hd) & !is.na(thang_DT), na.rm = TRUE),
-            gtri_hd = round(sum(gtri[!is.na(ma_hd) & !is.na(thang_DT)], na.rm = TRUE)/10^6,0),
-            chi_tieu = "Đã lên DT"
-            ) -> xbc_bangiao2
 
-b2c_aio1 %>%
-  filter(thang_dk_DT == thang_n) %>%
-  summarise(so_hd = sum(!is.na(ma_hd) & is.na(thang_DT), na.rm = TRUE),
-            gtri_hd = round(sum(gtri[!is.na(ma_hd) & is.na(thang_DT)], na.rm = TRUE)/10^6,0),
-            chi_tieu = "Chưa lên DT"
-            ) -> xbc_bangiao3
+```
 
-b2c_aio1 %>%
-  filter(thang_dk_DT == thang_n) %>%
-  summarise(so_hd = sum(!is.na(ma_hd) & is.na(thang_DT) & BG_VHKT == "Chưa BG", na.rm = TRUE),
-            gtri_hd = round(sum(gtri[!is.na(ma_hd) & is.na(thang_DT) & BG_VHKT == "Chưa BG"], na.rm = TRUE)/10^6,0),
-            chi_tieu = "Chưa bàn giao VHKT"
-            ) -> xbc_bangiao4
 
-b2c_aio1 %>%
-  filter(thang_dk_DT == thang_n) %>%
-  summarise(so_hd = sum(!is.na(ma_hd) & is.na(thang_DT) & BG_VHKT == "Chưa BG" & dich_vu == "Thương mại", na.rm = TRUE),
-            gtri_hd = round(sum(gtri[!is.na(ma_hd) & is.na(thang_DT) & BG_VHKT == "Chưa BG"  & dich_vu == "Thương mại"], na.rm = TRUE)/10^6,0),
-            chi_tieu = "HĐ thương mại tự điều hành"
-            ) -> xbc_bangiao5
+```{r, warning=FALSE, message=FALSE, results = 'hide', echo = FALSE}
+kq1x <- unlist(bc_ky_bbbg[1])
+kq2x <- unlist(bc_ky_bbbg[2])
+kq3x <- accounting(unlist(bc_ky_bbbg[c(1:nrow(bc_ky_bbbg)),3]), digits = 2L, format = "d", big.mark = ",")
+kq4x <- accounting(unlist(bc_ky_bbbg[c(1:nrow(bc_ky_bbbg)),4]), digits = 2L, format = "d", big.mark = ",")
+kq5x <- accounting(unlist(bc_ky_bbbg[c(1:nrow(bc_ky_bbbg)),5]), digits = 2L, format = "d", big.mark = ",")
+kq6x <- accounting(unlist(bc_ky_bbbg[c(1:nrow(bc_ky_bbbg)),6]), digits = 2L, format = "d", big.mark = ",")
+kq7x <- accounting(unlist(bc_ky_bbbg[c(1:nrow(bc_ky_bbbg)),7]), digits = 2L, format = "d", big.mark = ",")
+kq8x <- accounting(unlist(bc_ky_bbbg[c(1:nrow(bc_ky_bbbg)),8]), digits = 2L, format = "d", big.mark = ",")
+kq9x <- accounting(unlist(bc_ky_bbbg[c(1:nrow(bc_ky_bbbg)),9]), digits = 2L, format = "d", big.mark = ",")
+kq10x <- accounting(unlist(bc_ky_bbbg[c(1:nrow(bc_ky_bbbg)),10]), digits = 2L, format = "d", big.mark = ",")
+kq11x <- accounting(unlist(bc_ky_bbbg[c(1:nrow(bc_ky_bbbg)),11]), digits = 2L, format = "d", big.mark = ",")
+kq12x <- accounting(unlist(bc_ky_bbbg[c(1:nrow(bc_ky_bbbg)),12]), digits = 2L, format = "d", big.mark = ",")
+kq13x <- accounting(unlist(bc_ky_bbbg[c(1:nrow(bc_ky_bbbg)),13]), digits = 2L, format = "d", big.mark = ",")
+kq14x <- accounting(unlist(bc_ky_bbbg[c(1:nrow(bc_ky_bbbg)),14]), digits = 2L, format = "d", big.mark = ",")
 
-b2c_aio1 %>%
-  filter(thang_dk_DT == thang_n) %>%
-  summarise(so_hd = sum(!is.na(ma_hd) & is.na(thang_DT) & BG_VHKT == "Chưa BG" & so_ngau_tamung != "Đã tạm ứng đủ" & dich_vu == "Dịch vụ", na.rm = TRUE),
-            gtri_hd = round(sum(gtri[!is.na(ma_hd) & is.na(thang_DT) & BG_VHKT == "Chưa BG" & so_ngau_tamung != "Đã tạm ứng đủ"  & dich_vu == "Dịch vụ"], na.rm = TRUE)/10^6,0),
-            chi_tieu = "Chưa tạm ứng đủ 20%"
-            ) -> xbc_bangiao6
 
-b2c_aio1 %>%
-  filter(thang_dk_DT == thang_n) %>%
-  summarise(so_hd = sum(!is.na(ma_hd) & is.na(thang_DT) & BG_VHKT == "Chưa BG" & so_ngau_tamung == "Đã tạm ứng đủ" & du_hang == "Chưa đặt đủ hàng"  & dich_vu == "Dịch vụ", na.rm = TRUE),
-            gtri_hd = round(sum(gtri[!is.na(ma_hd) & is.na(thang_DT) & BG_VHKT == "Chưa BG" & so_ngau_tamung == "Đã tạm ứng đủ"  & du_hang == "Chưa đặt đủ hàng" & dich_vu == "Dịch vụ"], na.rm = TRUE)/10^6,0),
-            chi_tieu = "Chưa đặt đủ hàng"
-            ) -> xbc_bangiao7
-
-b2c_aio1 %>%
-  filter(thang_dk_DT == thang_n) %>%
-  summarise(so_hd = sum(!is.na(ma_hd) & is.na(thang_DT) & BG_VHKT == "Chưa BG" & so_ngau_tamung == "Đã tạm ứng đủ" & du_hang == "NCC chưa giao" & dich_vu == "Dịch vụ", na.rm = TRUE),
-            gtri_hd = round(sum(gtri[!is.na(ma_hd) & is.na(thang_DT) & BG_VHKT == "Chưa BG" & so_ngau_tamung == "Đã tạm ứng đủ"  & du_hang == "NCC chưa giao" & dich_vu == "Dịch vụ"], na.rm = TRUE)/10^6,0),
-            chi_tieu = "NCC chưa giao hàng"
-            ) -> xbc_bangiao8
-
-b2c_aio1 %>%
-  filter(thang_dk_DT == thang_n) %>%
-  summarise(so_hd = sum(!is.na(ma_hd) & is.na(thang_DT) & BG_VHKT == "Chưa BG" & mat_bang == "Chưa có MB" & dich_vu == "Dịch vụ", na.rm = TRUE),
-            gtri_hd = round(sum(gtri[!is.na(ma_hd) & is.na(thang_DT) & BG_VHKT == "Chưa BG" & mat_bang == "Chưa có MB" & dich_vu == "Dịch vụ"], na.rm = TRUE)/10^6,0),
-            chi_tieu = "Chưa có mặt bằng"
-            ) -> xbc_bangiao9
-
-b2c_aio1 %>%
-  filter(thang_dk_DT == thang_n) %>%
-  summarise(so_hd = sum(!is.na(ma_hd) & is.na(thang_DT) & BG_VHKT == "Đã BG", na.rm = TRUE),
-            gtri_hd = round(sum(gtri[!is.na(ma_hd) & is.na(thang_DT) & BG_VHKT == "Đã BG"], na.rm = TRUE)/10^6,0),
-            chi_tieu = "Đã bàn giao VHKT"
-            ) -> xbc_bangiao10
-
-b2c_aio1 %>%
-  filter(thang_dk_DT == thang_n) %>%
-  summarise(so_hd = sum(!is.na(ma_hd) & is.na(thang_DT) & BG_VHKT == "Đã BG" & tien_do == "Chưa thi công", na.rm = TRUE),
-            gtri_hd = round(sum(gtri[!is.na(ma_hd) & is.na(thang_DT) & BG_VHKT == "Đã BG" & tien_do == "Chưa thi công"], na.rm = TRUE)/10^6,0),
-            chi_tieu = "Chưa thi công"
-            ) -> xbc_bangiao11
-
-b2c_aio1 %>%
-  filter(thang_dk_DT == thang_n) %>%
-  summarise(so_hd = sum(!is.na(ma_hd) & is.na(thang_DT) & BG_VHKT == "Đã BG" & tien_do == "Đang thi công", na.rm = TRUE),
-            gtri_hd = round(sum(gtri[!is.na(ma_hd) & is.na(thang_DT) & BG_VHKT == "Đã BG" & tien_do == "Đang thi công"], na.rm = TRUE)/10^6,0),
-            chi_tieu = "Đang thi công"
-            ) -> xbc_bangiao12
-
-b2c_aio1 %>%
-  filter(thang_dk_DT == thang_n) %>%
-  summarise(so_hd = sum(!is.na(ma_hd) & is.na(thang_DT) & BG_VHKT == "Đã BG" & tien_do == "Thi công xong", na.rm = TRUE),
-            gtri_hd = round(sum(gtri[!is.na(ma_hd) & is.na(thang_DT) & BG_VHKT == "Đã BG" & tien_do == "Thi công xong"], na.rm = TRUE)/10^6,0),
-            chi_tieu = "Thi công xong"
-            ) -> xbc_bangiao13
-
-b2c_aio1 %>%
-  filter(thang_dk_DT == thang_n) %>%
-  summarise(so_hd = sum(!is.na(ma_hd) & is.na(thang_DT) & BG_VHKT == "Đã BG" & ngay_BBNT != "x", na.rm = TRUE),
-            gtri_hd = round(sum(gtri[!is.na(ma_hd) & is.na(thang_DT) & BG_VHKT == "Đã BG" & ngay_BBNT != "x"], na.rm = TRUE)/10^6,0),
-            chi_tieu = "Đã có BBNT"
-            ) -> xbc_bangiao13
-
-b2c_aio1 %>%
-  filter(thang_dk_DT == thang_n) %>%
-  summarise(so_hd = sum(!is.na(ma_hd) & is.na(thang_DT) & BG_VHKT == "Đã BG" & tien_do == "VHKT chưa confirm", na.rm = TRUE),
-            gtri_hd = round(sum(gtri[!is.na(ma_hd) & is.na(thang_DT) & BG_VHKT == "Đã BG" & tien_do == "VHKT chưa confirm"], na.rm = TRUE)/10^6,0),
-            chi_tieu = "VHKT chưa confirm"
-            ) -> xbc_bangiao14
-
-b2c_aio1 %>%
-  filter(thang_dk_DT == thang_n) %>%
-  summarise(so_hd = sum(!is.na(ma_hd) & is.na(thang_DT) & BG_VHKT == "Đã BG" & vuong != "x", na.rm = TRUE),
-            gtri_hd = round(sum(gtri[!is.na(ma_hd) & is.na(thang_DT) & BG_VHKT == "Đã BG" & vuong != "x"], na.rm = TRUE)/10^6,0),
-            chi_tieu = "Vướng"
-            ) -> xbc_bangiao15
-
-xbc_bangiao_full <- rbind(xbc_bangiao1, xbc_bangiao2, xbc_bangiao3, xbc_bangiao4, xbc_bangiao5, xbc_bangiao6, xbc_bangiao7, xbc_bangiao8, xbc_bangiao9, xbc_bangiao10, xbc_bangiao11, xbc_bangiao12, xbc_bangiao13, xbc_bangiao14, xbc_bangiao15)
-
-xbc_bangiao_full <- xbc_bangiao_full %>%
-  mutate(STT = c("", "I", "II", "1", "1.1", "1.2", "1.3", "1.4", "1.5", "2", "2.1", "2.2", "2.3", "2.4", "2.5"))
-
-xbc_bangiao_full <- xbc_bangiao_full[c(4,3,1,2)]
+bc_ky_bbbg_tb <- data.frame(kq1x,kq2x, kq3x, kq4x,kq5x,kq6x,kq7x,kq8x,kq9x, kq10x,kq11x,kq12x, kq13x, kq14x)
+bc_ky_bbbg_tb[3:14] <- lapply(bc_ky_bbbg_tb[3:14], as.numeric)
+rownames(bc_ky_bbbg_tb) <- NULL
 ```
 
 ```{r,out.width = '150%', echo = FALSE, warning=FALSE, message=FALSE}
 library(crosstalk)
 library(reactable)
-shared_xbc_bangiao_full <- SharedData$new(xbc_bangiao_full)
+shared_bc_ky_bbbg_tb <- SharedData$new(bc_ky_bbbg_tb)
 
 shiny::fluidRow(
   shiny::column(
     9,
-    reactable(shared_xbc_bangiao_full, minRows = 3,width = 455, height = "auto", pagination = FALSE,
+    reactable(shared_bc_ky_bbbg_tb, minRows = 3,width = 1470, height = "auto", pagination = FALSE, groupBy = "kq2x", 
+              columnGroups = list(
+    colGroup("Tổng HĐ đủ TƯ + VT + MB", columns = c("kq3x", "kq4x"), sticky = "left", headerStyle = list(color = "white", background = "#F56222", whiteSpace = "normal",textAlign = "center")),
+    colGroup("GĐKD chưa ký BG", columns = c("kq5x", "kq6x"), sticky = "left", headerStyle = list(color = "white", background = "#F56222", whiteSpace = "normal",textAlign = "center")),
+    colGroup("GĐKD đã ký BG", columns = c("kq7x", "kq8x"), sticky = "left", headerStyle = list(color = "white", background = "#F56222", whiteSpace = "normal",textAlign = "center")),
+     colGroup("GĐKT đã ký nhận", columns = c("kq9x", "kq10x"), sticky = "left", headerStyle = list(color = "white", background = "#3333CC", whiteSpace = "normal",textAlign = "center")),
+     colGroup("GĐKT đã từ chối", columns = c( "kq11x", "kq12x"), sticky = "left", headerStyle = list(color = "white", background = "#3333CC", whiteSpace = "normal",textAlign = "center")),
+    colGroup("GĐKT chưa ký nhận", columns = c( "kq13x", "kq14x" ), sticky = "left", headerStyle = list(color = "white", background = "#3333CC", whiteSpace = "normal",textAlign = "center"))
+  ),
   resizable = TRUE,
   wrap = FALSE,
+  searchable = TRUE,
   bordered = TRUE, highlight = TRUE, style = list(fontSize = "16px"),
-  theme = reactableTheme(header = "background-color: #F56222;"),
-  defaultColDef = colDef(
-    headerStyle = list(color = "white", background = "#F56222", whiteSpace = "normal",textAlign = "center"),
-  ),
-  striped = FALSE,
-  
-  rowStyle = function(index) {
-    if (index %in% c(2,3)) {  # index bắt đầu từ 0: hàng 2=1, 3=2, 5=4
-      list(
-        backgroundColor = "#FFD39B",  # nền xanh nhạt
-        fontWeight = "bold",          # chữ đậm
-        color = "#000"                # chữ đen
-      )
-    } else if (index == 1) {  # index bắt đầu từ 0: hàng 2=1, 3=2, 5=4
-      list(
-        backgroundColor = "#FFFF00",  # nền xanh nhạt
-        fontWeight = "bold",          # chữ đậm
-        color = "#EE2C2C"                # chữ đen
-      )
-    } else if (index %in% c(4, 10)) {  # index bắt đầu từ 0: hàng 2=1, 3=2, 5=4
-      list(
-        backgroundColor = "#FDE2CA",  # nền xanh nhạt
-        fontWeight = "bold",          # chữ đậm
-        color = "#EE2C2C"                # chữ đen
-      )
+  rowStyle = JS("
+    function(rowInfo, state) {
+      // Kiểm tra có subRows không → group row
+      if (rowInfo.subRows && rowInfo.subRows.length > 0) {
+        return {
+          backgroundColor: '#FFFFFF',  // group row: trắng
+          fontWeight: 'bold',
+          color: '#000000',
+          borderLeft: '2px solid transparent',
+          transition: 'background-color 0.2s ease'
+        };
+      } else {
+        return {
+          borderLeft: '2px solid #ffa62d',
+          backgroundColor: '#f5f5f5',   // subrows: xám nhạt
+          transition: 'background-color 0.2s ease'
+        };
+      }
     }
-  },
+  "), 
+  theme = reactableTheme(
+  headerStyle = list(background = "#F56222"),
+  rowStyle = list(
+    `&:hover` = list(
+      backgroundColor = "#FFE4CC !important",
+      cursor = "pointer"
+    )
+  )
+),
+  defaultColDef = colDef(
+    #headerStyle = list(color = "black", background = "#F5DEB3", whiteSpace = "normal",textAlign = "center"),
+    footerStyle = list(fontWeight = "bold", color = "#B22222")
+  ),
+  defaultSorted = c("kq1x","kq2x"),
+  striped = FALSE,
   columns = list(
     
-    STT = colDef(name = "STT", 
-      aggregate = "unique", align = "left", width = 50),
-    chi_tieu = colDef(name = "Chỉ tiêu",
-      aggregate = "count", align = "left", width = 220),
-    so_hd = colDef(name = "Số HĐ",
-      aggregate = "sum", align = "right", width = 80),
+    kq1x = colDef(name = "Mã tỉnh", headerStyle = list(color = "black", background = "#F5DEB3", whiteSpace = "normal",textAlign = "center"),
+                 aggregate = JS("
+        function(values, rows) {
+          return values.join(', ')
+        }
+      "),
+      aggregated = JS("
+        function(cellInfo) {
+          return React.createElement('span', {
+            title: cellInfo.value,
+            style: {cursor: 'help', fontWeight: 'bold'},
+          }, cellInfo.value);
+        }
+      "),
+      # Visual feedback khi hover
+      style  = JS("
+    function(rowInfo, state) {
+      // Kiểm tra có subRows không → group row
+      if (rowInfo.subRows && rowInfo.subRows.length > 0) {
+        return {
+          cursor: 'help',  // group row: trắng
+          fontWeight: 'bold',
+          backgroundColor: '#f5f5f5',
+          textDecoration: 'underline dotted'
+        };
+      } else {
+        return {
+          backgroundColor: '#f5f5f5'   // subrows: xám nhạt
+        };
+      }
+    }
+  "),
+     align = "left", width = 100, footer = "Tổng"),
+    kq2x = colDef(name = "AM", headerStyle = list(color = "black", background = "#F5DEB3", whiteSpace = "normal",textAlign = "center"),
+                  cell = JS("
+        function(cellInfo) {
+          // Add a tooltip to the grouped row header
+          return '<span title=\"Group ' + cellInfo.value + '\">' + cellInfo.value + '</span>'
+        }
+      "),
+      html = TRUE,
+      aggregate = "count", align = "left", width = 150),
+  
+    kq3x = colDef(name = "Số lượng", headerStyle = list(color = "black", background = "#F5DEB3", whiteSpace = "normal",textAlign = "center"),
+      aggregate = "sum", align = "right", width = 110, footer = function(values) formatC(sum(values), format = "f", digits = 0, big.mark = ",")),
     
-    gtri_hd = colDef(name = "Giá trị",
-      aggregate = "sum", align = "right", width = 100, format = colFormat(digits = 0, separators = TRUE))
+    kq4x = colDef(name = "Giá trị", headerStyle = list(color = "black", background = "#F5DEB3", whiteSpace = "normal",textAlign = "center"),
+      aggregate = "sum", align = "right", width = 110, format = colFormat(digits = 0, separators = TRUE), footer = function(values) formatC(sum(values), format = "f", digits = 0, big.mark = ",")),
+    
+    kq5x = colDef(name = "Số lượng", headerStyle = list(color = "black", background = "#F5DEB3", whiteSpace = "normal",textAlign = "center"),
+      aggregate = "sum", align = "right", width = 100, footer = function(values) sprintf("%.0f", sum(values))),
+    
+    kq6x = colDef(name = "Giá trị", headerStyle = list(color = "black", background = "#F5DEB3", whiteSpace = "normal",textAlign = "center"),
+      aggregate = "sum", align = "right", width = 100, format = colFormat(digits = 0, separators = TRUE), footer = function(values) formatC(sum(values), format = "f", digits = 0, big.mark = ",")),
+    
+    kq7x = colDef(name = "Số lượng", headerStyle = list(color = "black", background = "#F5DEB3", whiteSpace = "normal",textAlign = "center"),
+      aggregate = "sum", align = "right", width = 100, footer = function(values) sprintf("%.0f", sum(values))),
+    
+    kq8x = colDef(name = "Giá trị", headerStyle = list(color = "black", background = "#F5DEB3", whiteSpace = "normal",textAlign = "center"),
+      aggregate = "sum", align = "right", width = 100, format = colFormat(digits = 0, separators = TRUE), footer = function(values) sprintf("%s", format(sum(values), big.mark = ",", digits = 2L))),
+    
+    kq9x = colDef(name = "Số lượng",headerStyle = list(color = "black", background = "#BFCAE6", whiteSpace = "normal",textAlign = "center"),
+      aggregate = "sum", align = "right", width = 100, footer = function(values) sprintf("%.0f", sum(values))),
+    
+    kq10x = colDef(name = "Giá trị",headerStyle = list(color = "black", background = "#BFCAE6", whiteSpace = "normal",textAlign = "center"),
+      aggregate = "sum", align = "right", width = 100, format = colFormat(digits = 0, separators = TRUE), footer = function(values) sprintf("%s", format(sum(values), big.mark = ",", digits = 2L))),
+    
+    kq11x = colDef(name = "Số lượng",headerStyle = list(color = "black", background = "#BFCAE6", whiteSpace = "normal",textAlign = "center"),
+      aggregate = "sum", align = "right", width = 100, footer = function(values) sprintf("%.0f", sum(values))),
+    
+    kq12x = colDef(name = "Giá trị",headerStyle = list(color = "black", background = "#BFCAE6", whiteSpace = "normal",textAlign = "center"),
+      aggregate = "sum", align = "right", width = 100, format = colFormat(digits = 0, separators = TRUE), footer = function(values) sprintf("%s", format(sum(values), big.mark = ",", digits = 2L))),
+  
+    kq13x = colDef(name = "Số lượng",headerStyle = list(color = "black", background = "#BFCAE6", whiteSpace = "normal",textAlign = "center"),
+      aggregate = "sum", align = "right", width = 100, footer = function(values) sprintf("%.0f", sum(values))),
+    
+    kq14x = colDef(name = "Giá trị",headerStyle = list(color = "black", background = "#BFCAE6", whiteSpace = "normal",textAlign = "center"),
+      aggregate = "sum", align = "right", width = 100, format = colFormat(digits = 0, separators = TRUE), footer = function(values) sprintf("%s", format(sum(values), big.mark = ",", digits = 2L)))
+  
 
   )
 )))
 ```
-
-<div style="display:flex; gap:4px; align-items:stretch;">
-
-<div style="flex: 0 0 50%; padding: 0px;">
-
-
-```{r,out.width = '150%',fig.width=4, fig.height=4, echo = FALSE, warning=FALSE, message=FALSE}
-xpie_chuaBG <- xbc_bangiao_full[c(5:9), c(2,3)]
-xpie_chuaBG <- xpie_chuaBG %>%
-  mutate(ty_le = scales::percent(so_hd/sum(so_hd)))
-
-hchart(
-  xpie_chuaBG, "pie", hcaes(name = chi_tieu, y = so_hd),
-  name = "Corte",
-  innerSize = "70%",
-  dataLabels = list(format = "{point.name}<br>({point.ty_le})", style = list(fontFamily = "cambria"))
-) %>%
-  hc_title(text = "CƠ CẤU NGUYÊN NHÂN CHƯA BÀN GIAO VHKT",
-           margin = 20, 
-           align = "center",
-           style = list(color = "black", fontWeight = "bold",fontFamily = "cambria",fontSize = "20px")
-           ) %>% 
-  hc_tooltip(
-    useHTML = TRUE,
-    style = list(fontSize = "20px",fontFamily = "cambria"),
-    headerFormat = "",
-    pointFormat = "<div style='text-align: center;'> <b>{point.name}</b><br>{point.y} <br>{point.ty_le} </div>",
-    positioner = JS(
-      "function () {
-
-        /* one of the most important parts! */
-        xp =  this.chart.chartWidth/2 - this.label.width/2
-        yp =  this.chart.chartHeight/2 - this.label.height/2
-
-        return { x: xp, y: yp };
-
-      }"
-    ),
-    shadow = FALSE,
-    borderWidth = 0,
-    backgroundColor = "transparent",
-    hideDelay = 1000
-  )
-
-```
-
-
-</div>
-
-<div style="flex: 0 0 50%; padding: 0px;">
-
-
-```{r,out.width = '100%',fig.width=4, fig.height=4, echo = FALSE, warning=FALSE, message=FALSE}
-xpie_daBG <- xbc_bangiao_full[c(11:15), c(2,3)]
-xpie_daBG <- xpie_daBG %>%
-  mutate(ty_le = scales::percent(so_hd/sum(so_hd)))
-
-hchart(
-  xpie_daBG, "pie", hcaes(name = chi_tieu, y = so_hd),
-  name = "Corte",
-  innerSize = "70%",
-  dataLabels = list(format = "{point.name}<br>({point.ty_le})", style = list(fontFamily = "cambria"))
-) %>%
-  hc_title(text = "CƠ CẤU TIẾN ĐỘ THI CÔNG",
-           margin = 20, 
-           align = "center",
-           style = list(color = "black", fontWeight = "bold",fontFamily = "cambria",fontSize = "20px")
-           ) %>% 
-  hc_tooltip(
-    useHTML = TRUE,
-    style = list(fontSize = "20px",fontFamily = "cambria"),
-    headerFormat = "",
-    pointFormat = "<div style='text-align: center;'> <b>{point.name}</b><br>{point.y} <br>{point.ty_le} </div>",
-    positioner = JS(
-      "function () {
-
-        /* one of the most important parts! */
-        xp =  this.chart.chartWidth/2 - this.label.width/2
-        yp =  this.chart.chartHeight/2 - this.label.height/2
-
-        return { x: xp, y: yp };
-
-      }"
-    ),
-    shadow = FALSE,
-    borderWidth = 0,
-    backgroundColor = "transparent",
-    hideDelay = 1000
-  )
-```
-
-</div>
-</div>
-
-
-
-
 
 
 

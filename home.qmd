@@ -63,11 +63,11 @@ if (Sys.getenv("GCP_SERVICE_ACCOUNT") != "") {
   # Chạy local → đăng nhập thủ công
   gs4_auth()
 }
-sheet_url <- "https://docs.google.com/spreadsheets/d/12BlvL_Fxdubk5PL4G-pjX-c4_iQwiubVlknHCrAw5dw/edit?gid=904243310#gid=904243310"
+sheet_url <- "https://docs.google.com/spreadsheets/d/1-FhaD8Aa6oD09jQCUMk9u3CfIFyz2gyLyF2lNWYohl8/edit?gid=1614911787#gid=1614911787"
 b2c_aio <- read_sheet(sheet_url, sheet = "Chi tiết")
 
-b2c_aio1 <- b2c_aio[-c(1:4),c(1,2,3,10:20,22:27, 29:34, 36:44, 48, 53, 54, 56:68,51,79:80,82:83,85,86,78)]
-n_aio <- c("don_huy", "ma_tinh", "ma_hd", "gtri", "namthang_ky", "ngay_ky", "dich_vu", "thang_DT", "ngay_tam_ung", "gtri_tam_ung", "loai_pin", "ma_pin", "ten_pin", "so_pin", "ngay_cap_pin", "dambao_pin", "loai_inver", "ma_inver", "ten_inver", "so_inver", "ngay_cap_inver", "dambao_inver", "loai_acquy", "ma_acquy", "ten_acquy", "so_acquy", "ngay_cap_acquy", "dambao_acquy", "du_hang", "du_dk", "so_hd", "tyle_tamung", "am", "han_thicong", "so_ngau_tamung", "thang_dk_DT", "mat_bang", "quahan_thicong", "BG_VHKT", "tien_do", "ngay_thicong_xong", "ngay_BBNT", "vuong", "vuong_chitiet", "do_chacchan_VHKT", "ngay_dien_thicong", "ngay_BG_sang", "thang_ky", "nam_ky", "today_ngayBG", "today_ngaythicong", "chac_chan","cn_matbang", "cn_hanghoa", "cn_tiendo", "cn_thangdk", "cn_ngaybatdau", "cn_ngaythicongxong","ngay_ht")
+b2c_aio1 <- b2c_aio[-c(1:4),c(1,2,3,10:21,25:28, 30:35, 37:38, 42:44,46,50,52:53,59,65,68,71,72,75,76,77,78,82)]
+n_aio <- c("don_huy", "ma_tinh", "ma_hd", "gtri", "namthang_ky", "ngay_ky", "dich_vu", "thang_DT", "ngay_ht" ,"ngay_tam_ung", "gtri_tam_ung", "loai_pin", "ma_pin", "ten_pin", "so_pin", "loai_inver", "ma_inver", "ten_inver", "so_inver", "ngay_cap_inver", "dambao_inver", "loai_acquy", "ma_acquy", "ten_acquy", "so_acquy", "ngay_cap_acquy", "dambao_acquy", "Ngay_KD_BG", "Ngay_KT_nhan", "Ngay_KT_tuchoi1", "Ngay_KT_tuchoin", "TTQH", "KV", "am","tyle_tamung" ,"thang_dk_DT", "chac_chan","cn_matbang", "cn_hanghoa", "cn_tiendo", "cn_thangdk", "cn_ngaybatdau", "cn_ngaythicongxong","time_ky")
 colnames(b2c_aio1) <- n_aio
 
 #Chuyển các cột list định dạng giống ngày về date %m-%Y
@@ -148,6 +148,7 @@ thang_n <- format(as.Date(today(), format = , format = "%Y-%m-%d"), format = "%m
 thang_n1 <- format(as.Date(Sys.Date() %m+% months(1), format = , format = "%Y-%m-%d"), format = "%m-%Y")
 thang_n2 <- format(as.Date(Sys.Date() %m+% months(2), format = , format = "%Y-%m-%d"), format = "%m-%Y")
 b2c_aio1 %>%
+  filter(!don_huy %in% c("Đề xuất hủy", "Hết hiệu lực")) %>%
   group_by(ma_tinh, am) %>%
   summarise(so_hd = sum(!is.na(ma_hd)),
             gtri_hd = sum(gtri[!is.na(ma_hd)], na.rm = TRUE)/10^6,
