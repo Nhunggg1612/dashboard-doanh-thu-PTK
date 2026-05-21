@@ -475,7 +475,7 @@ tagList(
         )
       )
     )
-  ),
+,
   
   # JavaScript chụp ảnh
   # Script PHẢI đặt SAU div wrapper, dùng window.onload để chắc chắn html2canvas đã load
@@ -520,7 +520,7 @@ tagList(
       };
     });
   "))
-)
+))
 ```
 
 <span style="color: #3333CC;font-family: cambria;">**_* Di chuột qua cột Mã tỉnh để xem list tỉnh_**</span>
@@ -605,21 +605,19 @@ shared_bc_dambao_cnct_tb <- SharedData$new(bc_dambao_cnct_tb)
 
 # Load html2canvas
 tagList(
-  tags$head(
-    tags$script(src = "https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js")
-  ),
-  
-  # Wrapper bọc toàn bộ bảng
+  tags$script(src = "https://cdnjs.cloudflare.com/ajax/libs/dom-to-image/2.6.0/dom-to-image.min.js"),
+
   div(id = "table-wrapper-01",
     
-    # Thanh nút phía trên
     div(style = "display:flex; justify-content:flex-end; gap:8px; margin-bottom:8px;",
       tags$button(
         HTML('<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align:-3px; margin-right:4px"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>Tải PNG'),
+        id  = "btn-capture-01",
         onclick = "captureTable01()",
         style = "padding:6px 16px; background:#17a2b8; color:white; border:none; border-radius:5px; cursor:pointer; font-size:14px; font-weight:500;"
       )
     ),
+
     
 shiny::fluidRow(
   shiny::column(
@@ -771,22 +769,47 @@ shiny::fluidRow(
   )
 ))),
 # JavaScript chụp ảnh
+  # Script PHẢI đặt SAU div wrapper, dùng window.onload để chắc chắn html2canvas đã load
   tags$script(HTML("
-    function captureTable01() {
-      var el = document.getElementById('table-wrapper-01');
-      html2canvas(el, {
-        scale: 2,
-        useCORS: true,
-        backgroundColor: '#ffffff',
-        windowWidth: el.scrollWidth,
-        windowHeight: el.scrollHeight
-      }).then(function(canvas) {
-        var link = document.createElement('a');
-        link.download = 'bc_dambao_cnct.png';
-        link.href = canvas.toDataURL('image/png');
-        link.click();
-      });
-    }
+    window.addEventListener('load', function() {
+      window.captureTable01 = function() {
+        var btn = document.getElementById('btn-capture-01');
+        var el  = document.getElementById('table-wrapper-01');
+
+        btn.disabled  = true;
+        btn.innerText = '⏳ Đang xuất...';
+
+        // Lấy kích thước thực của bảng (kể cả phần bị ẩn do scroll)
+        var realW = el.scrollWidth;
+        var realH = el.scrollHeight;
+
+        domtoimage.toPng(el, {
+          quality : 1,
+          width   : realW,
+          height  : realH,
+          style   : {
+            overflow : 'visible',
+            width    : realW + 'px',
+            height   : realH + 'px'
+          },
+          bgcolor : '#ffffff'
+        })
+        .then(function(dataUrl) {
+          var link      = document.createElement('a');
+          link.download = 'bc_dambao_cnct.png';
+          link.href     = dataUrl;
+          link.click();
+
+          btn.disabled  = false;
+          btn.innerHTML = '📷 Tải PNG';
+        })
+        .catch(function(err) {
+          console.error('Lỗi xuất ảnh:', err);
+          btn.disabled  = false;
+          btn.innerText = '❌ Lỗi - thử lại';
+        });
+      };
+    });
   "))
 ))
 ```
@@ -819,21 +842,19 @@ shared_bc_tiendo_cnct_tb <- SharedData$new(bc_tiendo_cnct_tb)
 
 # Load html2canvas
 tagList(
-  tags$head(
-    tags$script(src = "https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js")
-  ),
-  
-  # Wrapper bọc toàn bộ bảng
+  tags$script(src = "https://cdnjs.cloudflare.com/ajax/libs/dom-to-image/2.6.0/dom-to-image.min.js"),
+
   div(id = "table-wrapper-01",
     
-    # Thanh nút phía trên
     div(style = "display:flex; justify-content:flex-end; gap:8px; margin-bottom:8px;",
       tags$button(
         HTML('<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align:-3px; margin-right:4px"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>Tải PNG'),
+        id  = "btn-capture-01",
         onclick = "captureTable01()",
         style = "padding:6px 16px; background:#17a2b8; color:white; border:none; border-radius:5px; cursor:pointer; font-size:14px; font-weight:500;"
       )
     ),
+
 
 shiny::fluidRow(
   shiny::column(
@@ -972,22 +993,47 @@ shiny::fluidRow(
   )
 ))),
 # JavaScript chụp ảnh
+  # Script PHẢI đặt SAU div wrapper, dùng window.onload để chắc chắn html2canvas đã load
   tags$script(HTML("
-    function captureTable01() {
-      var el = document.getElementById('table-wrapper-01');
-      html2canvas(el, {
-        scale: 2,
-        useCORS: true,
-        backgroundColor: '#ffffff',
-        windowWidth: el.scrollWidth,
-        windowHeight: el.scrollHeight
-      }).then(function(canvas) {
-        var link = document.createElement('a');
-        link.download = 'bc_tiendo_cnct.png';
-        link.href = canvas.toDataURL('image/png');
-        link.click();
-      });
-    }
+    window.addEventListener('load', function() {
+      window.captureTable01 = function() {
+        var btn = document.getElementById('btn-capture-01');
+        var el  = document.getElementById('table-wrapper-01');
+
+        btn.disabled  = true;
+        btn.innerText = '⏳ Đang xuất...';
+
+        // Lấy kích thước thực của bảng (kể cả phần bị ẩn do scroll)
+        var realW = el.scrollWidth;
+        var realH = el.scrollHeight;
+
+        domtoimage.toPng(el, {
+          quality : 1,
+          width   : realW,
+          height  : realH,
+          style   : {
+            overflow : 'visible',
+            width    : realW + 'px',
+            height   : realH + 'px'
+          },
+          bgcolor : '#ffffff'
+        })
+        .then(function(dataUrl) {
+          var link      = document.createElement('a');
+          link.download = 'bc_dambao_cnct.png';
+          link.href     = dataUrl;
+          link.click();
+
+          btn.disabled  = false;
+          btn.innerHTML = '📷 Tải PNG';
+        })
+        .catch(function(err) {
+          console.error('Lỗi xuất ảnh:', err);
+          btn.disabled  = false;
+          btn.innerText = '❌ Lỗi - thử lại';
+        });
+      };
+    });
   "))
 ))
 ```
@@ -1140,21 +1186,19 @@ shared_bc_ky_bbbg_tb <- SharedData$new(bc_ky_bbbg_tb)
 
 # Load html2canvas
 tagList(
-  tags$head(
-    tags$script(src = "https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js")
-  ),
-  
-  # Wrapper bọc toàn bộ bảng
+  tags$script(src = "https://cdnjs.cloudflare.com/ajax/libs/dom-to-image/2.6.0/dom-to-image.min.js"),
+
   div(id = "table-wrapper-01",
     
-    # Thanh nút phía trên
     div(style = "display:flex; justify-content:flex-end; gap:8px; margin-bottom:8px;",
       tags$button(
         HTML('<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align:-3px; margin-right:4px"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>Tải PNG'),
+        id  = "btn-capture-01",
         onclick = "captureTable01()",
         style = "padding:6px 16px; background:#17a2b8; color:white; border:none; border-radius:5px; cursor:pointer; font-size:14px; font-weight:500;"
       )
     ),
+
 shiny::fluidRow(
   shiny::column(
     9,
@@ -1291,22 +1335,47 @@ shiny::fluidRow(
   )
 ))),
 # JavaScript chụp ảnh
+  # Script PHẢI đặt SAU div wrapper, dùng window.onload để chắc chắn html2canvas đã load
   tags$script(HTML("
-    function captureTable01() {
-      var el = document.getElementById('table-wrapper-01');
-      html2canvas(el, {
-        scale: 2,
-        useCORS: true,
-        backgroundColor: '#ffffff',
-        windowWidth: el.scrollWidth,
-        windowHeight: el.scrollHeight
-      }).then(function(canvas) {
-        var link = document.createElement('a');
-        link.download = 'bc_tiendo_cnct.png';
-        link.href = canvas.toDataURL('image/png');
-        link.click();
-      });
-    }
+    window.addEventListener('load', function() {
+      window.captureTable01 = function() {
+        var btn = document.getElementById('btn-capture-01');
+        var el  = document.getElementById('table-wrapper-01');
+
+        btn.disabled  = true;
+        btn.innerText = '⏳ Đang xuất...';
+
+        // Lấy kích thước thực của bảng (kể cả phần bị ẩn do scroll)
+        var realW = el.scrollWidth;
+        var realH = el.scrollHeight;
+
+        domtoimage.toPng(el, {
+          quality : 1,
+          width   : realW,
+          height  : realH,
+          style   : {
+            overflow : 'visible',
+            width    : realW + 'px',
+            height   : realH + 'px'
+          },
+          bgcolor : '#ffffff'
+        })
+        .then(function(dataUrl) {
+          var link      = document.createElement('a');
+          link.download = 'bc_dambao_cnct.png';
+          link.href     = dataUrl;
+          link.click();
+
+          btn.disabled  = false;
+          btn.innerHTML = '📷 Tải PNG';
+        })
+        .catch(function(err) {
+          console.error('Lỗi xuất ảnh:', err);
+          btn.disabled  = false;
+          btn.innerText = '❌ Lỗi - thử lại';
+        });
+      };
+    });
   "))
 ))
 ```
