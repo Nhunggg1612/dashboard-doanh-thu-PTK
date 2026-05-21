@@ -409,134 +409,96 @@ rownames(bc_dkdt_n_tb) <- NULL
 ```{r,out.width = '150%', echo = FALSE, warning=FALSE, message=FALSE}
 library(crosstalk)
 library(reactable)
+library(htmltools)
+
 shared_bc_dkdt_n_tb <- SharedData$new(bc_dkdt_n_tb)
 
-shiny::fluidRow(
-  shiny::column(
-    9,
-    reactable(shared_bc_dkdt_n_tb, minRows = 3,width = 1250, height = "auto", pagination = FALSE, groupBy = "kq2x", 
-              columnGroups = list(
-    colGroup(paste0("Tổng DK DT T", thang_n), columns = c("kq3x", "kq4x"), sticky = "left", headerStyle = list(color = "white", background = "#F56222", whiteSpace = "normal",textAlign = "center")),
-    colGroup("Đã lên DT", columns = c("kq5x", "kq6x"), sticky = "left", headerStyle = list(color = "white", background = "#009900", whiteSpace = "normal",textAlign = "center")),
-    colGroup("Chưa lên DT", columns = c("kq7x", "kq8x"), sticky = "left", headerStyle = list(color = "white", background = "#3333CC", whiteSpace = "normal",textAlign = "center")),
-    colGroup("Chắc chắn", columns = c( "kq9x", "kq10x"), sticky = "left", headerStyle = list(color = "white", background = "#F56222", whiteSpace = "normal",textAlign = "center")),
-    colGroup("50/50", columns = c("kq11x", "kq12x"), sticky = "left", headerStyle = list(color = "white", background = "#F56222", whiteSpace = "normal",textAlign = "center"))
+# Load html2canvas
+tagList(
+  tags$head(
+    tags$script(src = "https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js")
   ),
-  resizable = TRUE,
-  wrap = FALSE,
-  searchable = TRUE,
-  bordered = TRUE, highlight = TRUE, style = list(fontSize = "16px"),
-  rowStyle = JS("
-    function(rowInfo, state) {
-      // Kiểm tra có subRows không → group row
-      if (rowInfo.subRows && rowInfo.subRows.length > 0) {
-        return {
-          backgroundColor: '#FFFFFF',  // group row: trắng
-          fontWeight: 'bold',
-          color: '#000000',
-          borderLeft: '2px solid transparent',
-          transition: 'background-color 0.2s ease'
-        };
-      } else {
-        return {
-          borderLeft: '2px solid #ffa62d',
-          backgroundColor: '#f5f5f5',   // subrows: xám nhạt
-          transition: 'background-color 0.2s ease'
-        };
-      }
-    }
-  "), 
-  theme = reactableTheme(
-  headerStyle = list(background = "#F56222"),
-  rowStyle = list(
-    `&:hover` = list(
-      backgroundColor = "#FFE4CC !important",
-      cursor = "pointer"
+  
+  # Wrapper bọc toàn bộ bảng
+  div(id = "table-wrapper-01",
+    
+    # Thanh nút phía trên
+    div(style = "display:flex; justify-content:flex-end; gap:8px; margin-bottom:8px;",
+      tags$button(
+        HTML('<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align:-3px; margin-right:4px"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>Tải PNG'),
+        onclick = "captureTable01()",
+        style = "padding:6px 16px; background:#17a2b8; color:white; border:none; border-radius:5px; cursor:pointer; font-size:14px; font-weight:500;"
+      )
+    ),
+    
+    # Bảng reactable của bạn
+    shiny::fluidRow(
+      shiny::column(
+        9,
+        reactable(shared_bc_dkdt_n_tb, minRows = 3, width = 1250, height = "auto", pagination = FALSE, groupBy = "kq2x",
+          columnGroups = list(
+            colGroup(paste0("Tổng DK DT T", thang_n), columns = c("kq3x", "kq4x"), sticky = "left", headerStyle = list(color = "white", background = "#F56222", whiteSpace = "normal", textAlign = "center")),
+            colGroup("Đã lên DT", columns = c("kq5x", "kq6x"), sticky = "left", headerStyle = list(color = "white", background = "#009900", whiteSpace = "normal", textAlign = "center")),
+            colGroup("Chưa lên DT", columns = c("kq7x", "kq8x"), sticky = "left", headerStyle = list(color = "white", background = "#3333CC", whiteSpace = "normal", textAlign = "center")),
+            colGroup("Chắc chắn", columns = c("kq9x", "kq10x"), sticky = "left", headerStyle = list(color = "white", background = "#F56222", whiteSpace = "normal", textAlign = "center")),
+            colGroup("50/50", columns = c("kq11x", "kq12x"), sticky = "left", headerStyle = list(color = "white", background = "#F56222", whiteSpace = "normal", textAlign = "center"))
+          ),
+          resizable = TRUE, wrap = FALSE, searchable = TRUE,
+          bordered = TRUE, highlight = TRUE, style = list(fontSize = "16px"),
+          rowStyle = JS("
+            function(rowInfo, state) {
+              if (rowInfo.subRows && rowInfo.subRows.length > 0) {
+                return { backgroundColor: '#FFFFFF', fontWeight: 'bold', color: '#000000', borderLeft: '2px solid transparent', transition: 'background-color 0.2s ease' };
+              } else {
+                return { borderLeft: '2px solid #ffa62d', backgroundColor: '#f5f5f5', transition: 'background-color 0.2s ease' };
+              }
+            }
+          "),
+          theme = reactableTheme(
+            headerStyle = list(background = "#F56222"),
+            rowStyle = list(`&:hover` = list(backgroundColor = "#FFE4CC !important", cursor = "pointer"))
+          ),
+          defaultColDef = colDef(footerStyle = list(fontWeight = "bold", color = "#B22222")),
+          defaultSorted = c("kq1x", "kq2x"),
+          striped = FALSE,
+          columns = list(
+            kq1x  = colDef(name = "Mã tỉnh",  headerStyle = list(color = "black", background = "#F5DEB3", whiteSpace = "normal", textAlign = "center"), aggregate = JS("function(values, rows) { return values.join(', ') }"), aggregated = JS("function(cellInfo) { return React.createElement('span', {title: cellInfo.value, style: {cursor:'help', fontWeight:'bold'}}, cellInfo.value); }"), style = JS("function(rowInfo) { if (rowInfo.subRows && rowInfo.subRows.length > 0) { return {cursor:'help', fontWeight:'bold', backgroundColor:'#f5f5f5', textDecoration:'underline dotted'}; } else { return {backgroundColor:'#f5f5f5'}; } }"), align = "left", width = 100, footer = "Tổng"),
+            kq2x  = colDef(name = "AM",        headerStyle = list(color = "black", background = "#F5DEB3", whiteSpace = "normal", textAlign = "center"), cell = JS("function(cellInfo) { return '<span title=\"Group ' + cellInfo.value + '\">' + cellInfo.value + '</span>' }"), html = TRUE, aggregate = "count", align = "left", width = 150),
+            kq3x  = colDef(name = "Số lượng",  headerStyle = list(color = "black", background = "#F5DEB3", whiteSpace = "normal", textAlign = "center"), aggregate = "sum", align = "right", width = 90,  footer = function(values) sprintf("%.0f", sum(values))),
+            kq4x  = colDef(name = "Giá trị",   headerStyle = list(color = "black", background = "#F5DEB3", whiteSpace = "normal", textAlign = "center"), aggregate = "sum", align = "right", width = 100, format = colFormat(digits = 0, separators = TRUE), footer = function(values) sprintf("%s", format(sum(values), big.mark = ",", digits = 2L))),
+            kq5x  = colDef(name = "Số lượng",  headerStyle = list(color = "black", background = "#C8E2B1", whiteSpace = "normal", textAlign = "center"), aggregate = "sum", align = "right", width = 90,  footer = function(values) sprintf("%.0f", sum(values))),
+            kq6x  = colDef(name = "Giá trị",   headerStyle = list(color = "black", background = "#C8E2B1", whiteSpace = "normal", textAlign = "center"), aggregate = "sum", align = "right", width = 100, format = colFormat(digits = 0, separators = TRUE), footer = function(values) sprintf("%s", format(sum(values), big.mark = ",", digits = 2L))),
+            kq7x  = colDef(name = "Số lượng",  headerStyle = list(color = "black", background = "#BFCAE6", whiteSpace = "normal", textAlign = "center"), aggregate = "sum", align = "right", width = 90,  footer = function(values) sprintf("%.0f", sum(values))),
+            kq8x  = colDef(name = "Giá trị",   headerStyle = list(color = "black", background = "#BFCAE6", whiteSpace = "normal", textAlign = "center"), aggregate = "sum", align = "right", width = 100, format = colFormat(digits = 0, separators = TRUE), footer = function(values) sprintf("%s", format(sum(values), big.mark = ",", digits = 2L))),
+            kq9x  = colDef(name = "Số lượng",  headerStyle = list(color = "black", background = "#F5DEB3", whiteSpace = "normal", textAlign = "center"), aggregate = "sum", align = "right", width = 90,  footer = function(values) sprintf("%.0f", sum(values))),
+            kq10x = colDef(name = "Giá trị",   headerStyle = list(color = "black", background = "#F5DEB3", whiteSpace = "normal", textAlign = "center"), aggregate = "sum", align = "right", width = 100, format = colFormat(digits = 0, separators = TRUE), footer = function(values) sprintf("%s", format(sum(values), big.mark = ",", digits = 2L))),
+            kq11x = colDef(name = "Số lượng",  headerStyle = list(color = "black", background = "#F5DEB3", whiteSpace = "normal", textAlign = "center"), aggregate = "sum", align = "right", width = 100, footer = function(values) sprintf("%.0f", sum(values))),
+            kq12x = colDef(name = "Giá trị",   headerStyle = list(color = "black", background = "#F5DEB3", whiteSpace = "normal", textAlign = "center"), aggregate = "sum", align = "right", width = 100, format = colFormat(digits = 0, separators = TRUE), footer = function(values) sprintf("%s", format(sum(values), big.mark = ",", digits = 2L)))
+          )
+        )
+      )
     )
-  )
-),
-  defaultColDef = colDef(
-    #headerStyle = list(color = "black", background = "#F5DEB3", whiteSpace = "normal",textAlign = "center"),
-    footerStyle = list(fontWeight = "bold", color = "#B22222")
   ),
-  defaultSorted = c("kq1x","kq2x"),
-  striped = FALSE,
-  columns = list(
-    
-    kq1x = colDef(name = "Mã tỉnh", headerStyle = list(color = "black", background = "#F5DEB3", whiteSpace = "normal",textAlign = "center"),
-                 aggregate = JS("
-        function(values, rows) {
-          return values.join(', ')
-        }
-      "),
-      aggregated = JS("
-        function(cellInfo) {
-          return React.createElement('span', {
-            title: cellInfo.value,
-            style: {cursor: 'help', fontWeight: 'bold'},
-          }, cellInfo.value);
-        }
-      "),
-      # Visual feedback khi hover
-      style  = JS("
-    function(rowInfo, state) {
-      // Kiểm tra có subRows không → group row
-      if (rowInfo.subRows && rowInfo.subRows.length > 0) {
-        return {
-          cursor: 'help',  // group row: trắng
-          fontWeight: 'bold',
-          backgroundColor: '#f5f5f5',
-          textDecoration: 'underline dotted'
-        };
-      } else {
-        return {
-          backgroundColor: '#f5f5f5'   // subrows: xám nhạt
-        };
-      }
+  
+  # JavaScript chụp ảnh
+  tags$script(HTML("
+    function captureTable01() {
+      var el = document.getElementById('table-wrapper-01');
+      html2canvas(el, {
+        scale: 2,
+        useCORS: true,
+        backgroundColor: '#ffffff',
+        windowWidth: el.scrollWidth,
+        windowHeight: el.scrollHeight
+      }).then(function(canvas) {
+        var link = document.createElement('a');
+        link.download = 'bang_dkdt.png';
+        link.href = canvas.toDataURL('image/png');
+        link.click();
+      });
     }
-  "),
-     align = "left", width = 100, footer = "Tổng"),
-    kq2x = colDef(name = "AM", headerStyle = list(color = "black", background = "#F5DEB3", whiteSpace = "normal",textAlign = "center"),
-                  cell = JS("
-        function(cellInfo) {
-          // Add a tooltip to the grouped row header
-          return '<span title=\"Group ' + cellInfo.value + '\">' + cellInfo.value + '</span>'
-        }
-      "),
-      html = TRUE,
-      aggregate = "count", align = "left", width = 150),
-    kq3x = colDef(name = "Số lượng", headerStyle = list(color = "black", background = "#F5DEB3", whiteSpace = "normal",textAlign = "center"),
-      aggregate = "sum", align = "right", width = 90, footer = function(values) sprintf("%.0f", sum(values))),
-    
-    kq4x = colDef(name = "Giá trị", headerStyle = list(color = "black", background = "#F5DEB3", whiteSpace = "normal",textAlign = "center"),
-      aggregate = "sum", align = "right", width = 100, format = colFormat(digits = 0, separators = TRUE), footer = function(values) sprintf("%s", format(sum(values), big.mark = ",", digits = 2L))),
-    
-    kq5x = colDef(name = "Số lượng", headerStyle = list(color = "black", background = "#C8E2B1", whiteSpace = "normal",textAlign = "center"),
-      aggregate = "sum", align = "right", width = 90, footer = function(values) sprintf("%.0f", sum(values))),
-    
-    kq6x = colDef(name = "Giá trị", headerStyle = list(color = "black", background = "#C8E2B1", whiteSpace = "normal",textAlign = "center"),
-      aggregate = "sum", align = "right", width = 100, format = colFormat(digits = 0, separators = TRUE), footer = function(values) sprintf("%s", format(sum(values), big.mark = ",", digits = 2L))),
-    
-    kq7x = colDef(name = "Số lượng", headerStyle = list(color = "black", background = "#BFCAE6", whiteSpace = "normal",textAlign = "center"),
-      aggregate = "sum", align = "right", width = 90, footer = function(values) sprintf("%.0f", sum(values))),
-    
-    kq8x = colDef(name = "Giá trị", headerStyle = list(color = "black", background = "#BFCAE6", whiteSpace = "normal",textAlign = "center"),
-      aggregate = "sum", align = "right", width = 100, format = colFormat(digits = 0, separators = TRUE), footer = function(values) sprintf("%s", format(sum(values), big.mark = ",", digits = 2L))),
-    
-    kq9x = colDef(name = "Số lượng",headerStyle = list(color = "black", background = "#F5DEB3", whiteSpace = "normal",textAlign = "center"),
-      aggregate = "sum", align = "right", width = 90, footer = function(values) sprintf("%.0f", sum(values))),
-    
-    kq10x = colDef(name = "Giá trị",headerStyle = list(color = "black", background = "#F5DEB3", whiteSpace = "normal",textAlign = "center"),
-      aggregate = "sum", align = "right", width = 100, format = colFormat(digits = 0, separators = TRUE), footer = function(values) sprintf("%s", format(sum(values), big.mark = ",", digits = 2L))),
-    
-    kq11x = colDef(name = "Số lượng",headerStyle = list(color = "black", background = "#F5DEB3", whiteSpace = "normal",textAlign = "center"),
-      aggregate = "sum", align = "right", width = 100, footer = function(values) sprintf("%.0f", sum(values))),
-    
-    kq12x = colDef(name = "Giá trị",headerStyle = list(color = "black", background = "#F5DEB3", whiteSpace = "normal",textAlign = "center"),
-      aggregate = "sum", align = "right", width = 100, format = colFormat(digits = 0, separators = TRUE), footer = function(values) sprintf("%s", format(sum(values), big.mark = ",", digits = 2L)))
-
-  )
-)))
+  "))
+)
 ```
 
 <span style="color: #3333CC;font-family: cambria;">**_* Di chuột qua cột Mã tỉnh để xem list tỉnh_**</span>
@@ -616,8 +578,27 @@ rownames(bc_dambao_cnct_tb) <- NULL
 ```{r,out.width = '150%', echo = FALSE, warning=FALSE, message=FALSE}
 library(crosstalk)
 library(reactable)
+library(htmltools)
 shared_bc_dambao_cnct_tb <- SharedData$new(bc_dambao_cnct_tb)
 
+# Load html2canvas
+tagList(
+  tags$head(
+    tags$script(src = "https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js")
+  ),
+  
+  # Wrapper bọc toàn bộ bảng
+  div(id = "table-wrapper-01",
+    
+    # Thanh nút phía trên
+    div(style = "display:flex; justify-content:flex-end; gap:8px; margin-bottom:8px;",
+      tags$button(
+        HTML('<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align:-3px; margin-right:4px"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>Tải PNG'),
+        onclick = "captureTable01()",
+        style = "padding:6px 16px; background:#17a2b8; color:white; border:none; border-radius:5px; cursor:pointer; font-size:14px; font-weight:500;"
+      )
+    ),
+    
 shiny::fluidRow(
   shiny::column(
     9,
@@ -766,7 +747,26 @@ shiny::fluidRow(
   
 
   )
-)))
+))),
+# JavaScript chụp ảnh
+  tags$script(HTML("
+    function captureTable01() {
+      var el = document.getElementById('table-wrapper-01');
+      html2canvas(el, {
+        scale: 2,
+        useCORS: true,
+        backgroundColor: '#ffffff',
+        windowWidth: el.scrollWidth,
+        windowHeight: el.scrollHeight
+      }).then(function(canvas) {
+        var link = document.createElement('a');
+        link.download = 'bc_dambao_cnct.png';
+        link.href = canvas.toDataURL('image/png');
+        link.click();
+      });
+    }
+  "))
+))
 ```
 
 ```{r, warning=FALSE, message=FALSE, results = 'hide', echo = FALSE}
@@ -794,6 +794,24 @@ rownames(bc_tiendo_cnct_tb) <- NULL
 library(crosstalk)
 library(reactable)
 shared_bc_tiendo_cnct_tb <- SharedData$new(bc_tiendo_cnct_tb)
+
+# Load html2canvas
+tagList(
+  tags$head(
+    tags$script(src = "https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js")
+  ),
+  
+  # Wrapper bọc toàn bộ bảng
+  div(id = "table-wrapper-01",
+    
+    # Thanh nút phía trên
+    div(style = "display:flex; justify-content:flex-end; gap:8px; margin-bottom:8px;",
+      tags$button(
+        HTML('<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align:-3px; margin-right:4px"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>Tải PNG'),
+        onclick = "captureTable01()",
+        style = "padding:6px 16px; background:#17a2b8; color:white; border:none; border-radius:5px; cursor:pointer; font-size:14px; font-weight:500;"
+      )
+    ),
 
 shiny::fluidRow(
   shiny::column(
@@ -930,7 +948,26 @@ shiny::fluidRow(
   
 
   )
-)))
+))),
+# JavaScript chụp ảnh
+  tags$script(HTML("
+    function captureTable01() {
+      var el = document.getElementById('table-wrapper-01');
+      html2canvas(el, {
+        scale: 2,
+        useCORS: true,
+        backgroundColor: '#ffffff',
+        windowWidth: el.scrollWidth,
+        windowHeight: el.scrollHeight
+      }).then(function(canvas) {
+        var link = document.createElement('a');
+        link.download = 'bc_tiendo_cnct.png';
+        link.href = canvas.toDataURL('image/png');
+        link.click();
+      });
+    }
+  "))
+))
 ```
 
 #### <span style="color: #C35817;font-family: cambria;">**2.2. Số HĐ Thi công xong theo ngày**</span>
@@ -1079,6 +1116,23 @@ library(crosstalk)
 library(reactable)
 shared_bc_ky_bbbg_tb <- SharedData$new(bc_ky_bbbg_tb)
 
+# Load html2canvas
+tagList(
+  tags$head(
+    tags$script(src = "https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js")
+  ),
+  
+  # Wrapper bọc toàn bộ bảng
+  div(id = "table-wrapper-01",
+    
+    # Thanh nút phía trên
+    div(style = "display:flex; justify-content:flex-end; gap:8px; margin-bottom:8px;",
+      tags$button(
+        HTML('<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align:-3px; margin-right:4px"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>Tải PNG'),
+        onclick = "captureTable01()",
+        style = "padding:6px 16px; background:#17a2b8; color:white; border:none; border-radius:5px; cursor:pointer; font-size:14px; font-weight:500;"
+      )
+    ),
 shiny::fluidRow(
   shiny::column(
     9,
@@ -1213,7 +1267,26 @@ shiny::fluidRow(
   
 
   )
-)))
+))),
+# JavaScript chụp ảnh
+  tags$script(HTML("
+    function captureTable01() {
+      var el = document.getElementById('table-wrapper-01');
+      html2canvas(el, {
+        scale: 2,
+        useCORS: true,
+        backgroundColor: '#ffffff',
+        windowWidth: el.scrollWidth,
+        windowHeight: el.scrollHeight
+      }).then(function(canvas) {
+        var link = document.createElement('a');
+        link.download = 'bc_tiendo_cnct.png';
+        link.href = canvas.toDataURL('image/png');
+        link.click();
+      });
+    }
+  "))
+))
 ```
 
 
