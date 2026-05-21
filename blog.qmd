@@ -1020,7 +1020,7 @@ shiny::fluidRow(
         })
         .then(function(dataUrl) {
           var link      = document.createElement('a');
-          link.download = 'bc_dambao_cnct.png';
+          link.download = 'bc_tiendo_cnct.png';
           link.href     = dataUrl;
           link.click();
 
@@ -1362,7 +1362,7 @@ shiny::fluidRow(
         })
         .then(function(dataUrl) {
           var link      = document.createElement('a');
-          link.download = 'bc_dambao_cnct.png';
+          link.download = 'bc_bbbg.png';
           link.href     = dataUrl;
           link.click();
 
