@@ -474,7 +474,7 @@ tagList(
           )
         )
       )
-    )
+    ))
 ,
   
   # JavaScript chụp ảnh
@@ -520,7 +520,7 @@ tagList(
       };
     });
   "))
-))
+)
 ```
 
 <span style="color: #3333CC;font-family: cambria;">**_* Di chuột qua cột Mã tỉnh để xem list tỉnh_**</span>
@@ -607,13 +607,13 @@ shared_bc_dambao_cnct_tb <- SharedData$new(bc_dambao_cnct_tb)
 tagList(
   tags$script(src = "https://cdnjs.cloudflare.com/ajax/libs/dom-to-image/2.6.0/dom-to-image.min.js"),
 
-  div(id = "table-wrapper-01",
+  div(id = "table-wrapper-02",
     
     div(style = "display:flex; justify-content:flex-end; gap:8px; margin-bottom:8px;",
       tags$button(
         HTML('<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align:-3px; margin-right:4px"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>Tải PNG'),
-        id  = "btn-capture-01",
-        onclick = "captureTable01()",
+        id  = "btn-capture-02",
+        onclick = "captureTable02()",
         style = "padding:6px 16px; background:#17a2b8; color:white; border:none; border-radius:5px; cursor:pointer; font-size:14px; font-weight:500;"
       )
     ),
@@ -767,14 +767,14 @@ shiny::fluidRow(
   
 
   )
-))),
+)))),
 # JavaScript chụp ảnh
   # Script PHẢI đặt SAU div wrapper, dùng window.onload để chắc chắn html2canvas đã load
   tags$script(HTML("
     window.addEventListener('load', function() {
-      window.captureTable01 = function() {
-        var btn = document.getElementById('btn-capture-01');
-        var el  = document.getElementById('table-wrapper-01');
+      window.captureTable02 = function() {
+        var btn = document.getElementById('btn-capture-02');
+        var el  = document.getElementById('table-wrapper-02');
 
         btn.disabled  = true;
         btn.innerText = '⏳ Đang xuất...';
@@ -811,7 +811,7 @@ shiny::fluidRow(
       };
     });
   "))
-))
+)
 ```
 
 ```{r, warning=FALSE, message=FALSE, results = 'hide', echo = FALSE}
@@ -844,13 +844,13 @@ shared_bc_tiendo_cnct_tb <- SharedData$new(bc_tiendo_cnct_tb)
 tagList(
   tags$script(src = "https://cdnjs.cloudflare.com/ajax/libs/dom-to-image/2.6.0/dom-to-image.min.js"),
 
-  div(id = "table-wrapper-01",
+  div(id = "table-wrapper-03",
     
     div(style = "display:flex; justify-content:flex-end; gap:8px; margin-bottom:8px;",
       tags$button(
         HTML('<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align:-3px; margin-right:4px"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>Tải PNG'),
-        id  = "btn-capture-01",
-        onclick = "captureTable01()",
+        id  = "btn-capture-03",
+        onclick = "captureTable03()",
         style = "padding:6px 16px; background:#17a2b8; color:white; border:none; border-radius:5px; cursor:pointer; font-size:14px; font-weight:500;"
       )
     ),
@@ -991,14 +991,14 @@ shiny::fluidRow(
   
 
   )
-))),
+)))),
 # JavaScript chụp ảnh
   # Script PHẢI đặt SAU div wrapper, dùng window.onload để chắc chắn html2canvas đã load
   tags$script(HTML("
     window.addEventListener('load', function() {
-      window.captureTable01 = function() {
-        var btn = document.getElementById('btn-capture-01');
-        var el  = document.getElementById('table-wrapper-01');
+      window.captureTable03 = function() {
+        var btn = document.getElementById('btn-capture-03');
+        var el  = document.getElementById('table-wrapper-03');
 
         btn.disabled  = true;
         btn.innerText = '⏳ Đang xuất...';
@@ -1035,7 +1035,7 @@ shiny::fluidRow(
       };
     });
   "))
-))
+)
 ```
 
 #### <span style="color: #C35817;font-family: cambria;">**2.2. Số HĐ Thi công xong theo ngày**</span>
@@ -1188,13 +1188,13 @@ shared_bc_ky_bbbg_tb <- SharedData$new(bc_ky_bbbg_tb)
 tagList(
   tags$script(src = "https://cdnjs.cloudflare.com/ajax/libs/dom-to-image/2.6.0/dom-to-image.min.js"),
 
-  div(id = "table-wrapper-01",
+  div(id = "table-wrapper-04",
     
     div(style = "display:flex; justify-content:flex-end; gap:8px; margin-bottom:8px;",
       tags$button(
         HTML('<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align:-3px; margin-right:4px"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>Tải PNG'),
-        id  = "btn-capture-01",
-        onclick = "captureTable01()",
+        id  = "btn-capture-04",
+        onclick = "captureTable04()",
         style = "padding:6px 16px; background:#17a2b8; color:white; border:none; border-radius:5px; cursor:pointer; font-size:14px; font-weight:500;"
       )
     ),
@@ -1333,14 +1333,14 @@ shiny::fluidRow(
   
 
   )
-))),
+)))),
 # JavaScript chụp ảnh
   # Script PHẢI đặt SAU div wrapper, dùng window.onload để chắc chắn html2canvas đã load
   tags$script(HTML("
     window.addEventListener('load', function() {
-      window.captureTable01 = function() {
-        var btn = document.getElementById('btn-capture-01');
-        var el  = document.getElementById('table-wrapper-01');
+      window.captureTable04 = function() {
+        var btn = document.getElementById('btn-capture-04');
+        var el  = document.getElementById('table-wrapper-04');
 
         btn.disabled  = true;
         btn.innerText = '⏳ Đang xuất...';
@@ -1377,7 +1377,7 @@ shiny::fluidRow(
       };
     });
   "))
-))
+)
 ```
 
 
