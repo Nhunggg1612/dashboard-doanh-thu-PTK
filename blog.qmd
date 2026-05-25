@@ -413,83 +413,57 @@ library(htmltools)
 
 shared_bc_dkdt_n_tb <- SharedData$new(bc_dkdt_n_tb)
 
+# Load html2canvas
 tagList(
   tags$script(src = "https://cdnjs.cloudflare.com/ajax/libs/dom-to-image/2.6.0/dom-to-image.min.js"),
 
   div(id = "table-wrapper-01",
-
-    # ── Filter + nút tải PNG ──────────────────────────────────────────────────
-    div(style = "display:flex; justify-content:space-between; align-items:flex-end; margin-bottom:8px;",
-
-      # Filter crosstalk (tìm theo AM)
-      div(style = "display:flex; gap:12px; align-items:flex-end;",
-        filter_select("filter_am",    "AM:",      shared_bc_dkdt_n_tb, ~kq2x),
-        filter_select("filter_tinh",  "Mã tỉnh:", shared_bc_dkdt_n_tb, ~kq1x)
-      ),
-
-      # Nút tải PNG
+    
+    div(style = "display:flex; justify-content:flex-end; gap:8px; margin-bottom:8px;",
       tags$button(
         HTML('<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align:-3px; margin-right:4px"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>Tải PNG'),
-        id      = "btn-capture-01",
+        id  = "btn-capture-01",
         onclick = "captureTable01()",
-        style   = "padding:6px 16px; background:#17a2b8; color:white; border:none; border-radius:5px; cursor:pointer; font-size:14px; font-weight:500;"
+        style = "padding:6px 16px; background:#17a2b8; color:white; border:none; border-radius:5px; cursor:pointer; font-size:14px; font-weight:500;"
       )
     ),
-
-    # ── Bảng reactable ───────────────────────────────────────────────────────
+    
+    # Bảng reactable của bạn
     shiny::fluidRow(
       shiny::column(
         9,
-        reactable(
-          shared_bc_dkdt_n_tb,
-          minRows    = 3,
-          width      = 1250,
-          height     = "auto",
-          pagination = FALSE,
-          groupBy    = "kq2x",
-          searchable = FALSE,        # ← tắt search reactable, dùng filter crosstalk
-
+        reactable(shared_bc_dkdt_n_tb, minRows = 3, width = 1250, height = "auto", pagination = FALSE, groupBy = "kq2x",
           columnGroups = list(
             colGroup(paste0("Tổng DK DT T", thang_n), columns = c("kq3x", "kq4x"), sticky = "left", headerStyle = list(color = "white", background = "#F56222", whiteSpace = "normal", textAlign = "center")),
-            colGroup("Đã lên DT",   columns = c("kq5x", "kq6x"),   sticky = "left", headerStyle = list(color = "white", background = "#009900", whiteSpace = "normal", textAlign = "center")),
-            colGroup("Chưa lên DT", columns = c("kq7x", "kq8x"),   sticky = "left", headerStyle = list(color = "white", background = "#3333CC", whiteSpace = "normal", textAlign = "center")),
-            colGroup("Chắc chắn",   columns = c("kq9x", "kq10x"),  sticky = "left", headerStyle = list(color = "white", background = "#F56222", whiteSpace = "normal", textAlign = "center")),
-            colGroup("50/50",       columns = c("kq11x", "kq12x"), sticky = "left", headerStyle = list(color = "white", background = "#F56222", whiteSpace = "normal", textAlign = "center"))
+            colGroup("Đã lên DT", columns = c("kq5x", "kq6x"), sticky = "left", headerStyle = list(color = "white", background = "#009900", whiteSpace = "normal", textAlign = "center")),
+            colGroup("Chưa lên DT", columns = c("kq7x", "kq8x"), sticky = "left", headerStyle = list(color = "white", background = "#3333CC", whiteSpace = "normal", textAlign = "center")),
+            colGroup("Chắc chắn", columns = c("kq9x", "kq10x"), sticky = "left", headerStyle = list(color = "white", background = "#F56222", whiteSpace = "normal", textAlign = "center")),
+            colGroup("50/50", columns = c("kq11x", "kq12x"), sticky = "left", headerStyle = list(color = "white", background = "#F56222", whiteSpace = "normal", textAlign = "center"))
           ),
-
-          resizable = TRUE,
-          wrap      = FALSE,
-          bordered  = TRUE,
-          highlight = TRUE,
-          style     = list(fontSize = "16px"),
-
+          resizable = TRUE, wrap = FALSE, searchable = FALSE,
+          bordered = TRUE, highlight = TRUE, style = list(fontSize = "16px"),
           rowStyle = JS("
             function(rowInfo, state) {
               if (rowInfo.subRows && rowInfo.subRows.length > 0) {
-                return { backgroundColor: '#FFFFFF', fontWeight: 'bold', color: '#000000',
-                         borderLeft: '2px solid transparent', transition: 'background-color 0.2s ease' };
+                return { backgroundColor: '#FFFFFF', fontWeight: 'bold', color: '#000000', borderLeft: '2px solid transparent', transition: 'background-color 0.2s ease' };
               } else {
-                return { borderLeft: '2px solid #ffa62d', backgroundColor: '#f5f5f5',
-                         transition: 'background-color 0.2s ease' };
+                return { borderLeft: '2px solid #ffa62d', backgroundColor: '#f5f5f5', transition: 'background-color 0.2s ease' };
               }
             }
           "),
-
           theme = reactableTheme(
             headerStyle = list(background = "#F56222"),
-            rowStyle    = list(`&:hover` = list(backgroundColor = "#FFE4CC !important", cursor = "pointer"))
+            rowStyle = list(`&:hover` = list(backgroundColor = "#FFE4CC !important", cursor = "pointer"))
           ),
-
           defaultColDef = colDef(footerStyle = list(fontWeight = "bold", color = "#B22222")),
           defaultSorted = c("kq1x", "kq2x"),
-          striped       = FALSE,
-
+          striped = FALSE,
           columns = list(
             kq1x  = colDef(name = "Mã tỉnh",  headerStyle = list(color = "black", background = "#F5DEB3", whiteSpace = "normal", textAlign = "center"), aggregate = JS("function(values, rows) { return values.join(', ') }"), aggregated = JS("function(cellInfo) { return React.createElement('span', {title: cellInfo.value, style: {cursor:'help', fontWeight:'bold'}}, cellInfo.value); }"), style = JS("function(rowInfo) { if (rowInfo.subRows && rowInfo.subRows.length > 0) { return {cursor:'help', fontWeight:'bold', backgroundColor:'#f5f5f5', textDecoration:'underline dotted'}; } else { return {backgroundColor:'#f5f5f5'}; } }"), align = "left", width = 100, footer = "Tổng"),
             kq2x  = colDef(name = "AM",        headerStyle = list(color = "black", background = "#F5DEB3", whiteSpace = "normal", textAlign = "center"), cell = JS("function(cellInfo) { return '<span title=\"Group ' + cellInfo.value + '\">' + cellInfo.value + '</span>' }"), html = TRUE, aggregate = "count", align = "left", width = 150),
             kq3x  = colDef(name = "Số lượng",  headerStyle = list(color = "black", background = "#F5DEB3", whiteSpace = "normal", textAlign = "center"), aggregate = "sum", align = "right", width = 90,  footer = function(values) sprintf("%.0f", sum(values))),
             kq4x  = colDef(name = "Giá trị",   headerStyle = list(color = "black", background = "#F5DEB3", whiteSpace = "normal", textAlign = "center"), aggregate = "sum", align = "right", width = 100, format = colFormat(digits = 0, separators = TRUE), footer = function(values) formatC(sum(values), format = "f", digits = 0, big.mark = ",")),
-            kq5x  = colDef(name = "Số lượng",  headerStyle = list(color = "black", background = "#C8E2B1", whiteSpace = "normal", textAlign = "center"), aggregate = "sum", align = "right", width = 90,  footer = function(values) formatC(sum(values), format = "f", digits = 0, big.mark = ",")),
+            kq5x  = colDef(name = "Số lượng",  headerStyle = list(color = "black", background = "#C8E2B1", whiteSpace = "normal", textAlign = "center"), aggregate = "sum", align = "right", width = 90, footer = function(values) formatC(sum(values), format = "f", digits = 0, big.mark = ",")),
             kq6x  = colDef(name = "Giá trị",   headerStyle = list(color = "black", background = "#C8E2B1", whiteSpace = "normal", textAlign = "center"), aggregate = "sum", align = "right", width = 100, format = colFormat(digits = 0, separators = TRUE), footer = function(values) formatC(sum(values), format = "f", digits = 0, big.mark = ",")),
             kq7x  = colDef(name = "Số lượng",  headerStyle = list(color = "black", background = "#BFCAE6", whiteSpace = "normal", textAlign = "center"), aggregate = "sum", align = "right", width = 90,  footer = function(values) sprintf("%.0f", sum(values))),
             kq8x  = colDef(name = "Giá trị",   headerStyle = list(color = "black", background = "#BFCAE6", whiteSpace = "normal", textAlign = "center"), aggregate = "sum", align = "right", width = 100, format = colFormat(digits = 0, separators = TRUE), footer = function(values) formatC(sum(values), format = "f", digits = 0, big.mark = ",")),
@@ -500,10 +474,11 @@ tagList(
           )
         )
       )
-    )
-  ),
-
-  # ── JavaScript chụp ảnh ──────────────────────────────────────────────────
+    ))
+,
+  
+  # JavaScript chụp ảnh
+  # Script PHẢI đặt SAU div wrapper, dùng window.onload để chắc chắn html2canvas đã load
   tags$script(HTML("
     window.addEventListener('load', function() {
       window.captureTable01 = function() {
@@ -513,6 +488,7 @@ tagList(
         btn.disabled  = true;
         btn.innerText = '⏳ Đang xuất...';
 
+        // Lấy kích thước thực của bảng (kể cả phần bị ẩn do scroll)
         var realW = el.scrollWidth;
         var realH = el.scrollHeight;
 
@@ -534,7 +510,7 @@ tagList(
           link.click();
 
           btn.disabled  = false;
-          btn.innerHTML = '<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"16\" height=\"16\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" style=\"vertical-align:-3px; margin-right:4px\"><path d=\"M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4\"/><polyline points=\"7 10 12 15 17 10\"/><line x1=\"12\" y1=\"15\" x2=\"12\" y2=\"3\"/></svg>Tải PNG';
+          btn.innerHTML = '📷 Tải PNG';
         })
         .catch(function(err) {
           console.error('Lỗi xuất ảnh:', err);
@@ -659,7 +635,7 @@ shiny::fluidRow(
   ),
   resizable = TRUE,
   wrap = FALSE,
-  searchable = TRUE,
+  searchable = FALSE,
   bordered = TRUE, highlight = TRUE, style = list(fontSize = "16px"),
   rowStyle = JS("
     function(rowInfo, state) {
@@ -895,7 +871,7 @@ shiny::fluidRow(
   ),
   resizable = TRUE,
   wrap = FALSE,
-  searchable = TRUE,
+  searchable = FALSE,
   bordered = TRUE, highlight = TRUE, style = list(fontSize = "16px"),
   rowStyle = JS("
     function(rowInfo, state) {
@@ -1237,7 +1213,7 @@ shiny::fluidRow(
   ),
   resizable = TRUE,
   wrap = FALSE,
-  searchable = TRUE,
+  searchable = FALSE,
   bordered = TRUE, highlight = TRUE, style = list(fontSize = "16px"),
   rowStyle = JS("
     function(rowInfo, state) {
