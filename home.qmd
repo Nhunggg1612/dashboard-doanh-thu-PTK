@@ -294,25 +294,25 @@ shiny::fluidRow(
       aggregate = "sum", align = "right", width = 90, footer = function(values) sprintf("%.0f", sum(values))),
     
     kq6 = colDef(name = "Giá trị",
-      aggregate = "sum", align = "right", width = 100, format = colFormat(digits = 0, separators = TRUE), footer = function(values) sprintf("%s", format(sum(values), big.mark = ",", digits = 2L))),
+      aggregate = "sum", align = "right", width = 100, format = colFormat(digits = 0, separators = TRUE), footer = function(values) formatC(sum(values), format = "f", digits = 0, big.mark = ",")),
     
     kq7 = colDef(name = "Số lượng",
       aggregate = "sum", align = "right", width = 90, footer = function(values) sprintf("%.0f", sum(values))),
     
     kq8 = colDef(name = "Giá trị",
-      aggregate = "sum", align = "right", width = 100, format = colFormat(digits = 0, separators = TRUE), footer = function(values) sprintf("%s", format(sum(values), big.mark = ",", digits = 2L))),
+      aggregate = "sum", align = "right", width = 100, format = colFormat(digits = 0, separators = TRUE), footer = function(values) formatC(sum(values), format = "f", digits = 0, big.mark = ",")),
     
     kq9 = colDef(name = "Số lượng",
       aggregate = "sum", align = "right", width = 90, footer = function(values) sprintf("%.0f", sum(values))),
     
     kq10 = colDef(name = "Giá trị",
-      aggregate = "sum", align = "right", width = 100, format = colFormat(digits = 0, separators = TRUE), footer = function(values) sprintf("%s", format(sum(values), big.mark = ",", digits = 2L))),
+      aggregate = "sum", align = "right", width = 100, format = colFormat(digits = 0, separators = TRUE), footer = function(values) formatC(sum(values), format = "f", digits = 0, big.mark = ",")),
     
     kq11 = colDef(name = "Số lượng",
       aggregate = "sum", align = "right", width = 100, footer = function(values) sprintf("%.0f", sum(values))),
     
     kq12 = colDef(name = "Giá trị",
-      aggregate = "sum", align = "right", width = 100, format = colFormat(digits = 0, separators = TRUE), footer = function(values) sprintf("%s", format(sum(values), big.mark = ",", digits = 2L)))
+      aggregate = "sum", align = "right", width = 100, format = colFormat(digits = 0, separators = TRUE), footer = function(values) formatC(sum(values), format = "f", digits = 0, big.mark = ","))
 
   )
 )))

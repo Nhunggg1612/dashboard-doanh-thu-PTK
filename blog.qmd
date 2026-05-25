@@ -462,15 +462,15 @@ tagList(
             kq1x  = colDef(name = "Mã tỉnh",  headerStyle = list(color = "black", background = "#F5DEB3", whiteSpace = "normal", textAlign = "center"), aggregate = JS("function(values, rows) { return values.join(', ') }"), aggregated = JS("function(cellInfo) { return React.createElement('span', {title: cellInfo.value, style: {cursor:'help', fontWeight:'bold'}}, cellInfo.value); }"), style = JS("function(rowInfo) { if (rowInfo.subRows && rowInfo.subRows.length > 0) { return {cursor:'help', fontWeight:'bold', backgroundColor:'#f5f5f5', textDecoration:'underline dotted'}; } else { return {backgroundColor:'#f5f5f5'}; } }"), align = "left", width = 100, footer = "Tổng"),
             kq2x  = colDef(name = "AM",        headerStyle = list(color = "black", background = "#F5DEB3", whiteSpace = "normal", textAlign = "center"), cell = JS("function(cellInfo) { return '<span title=\"Group ' + cellInfo.value + '\">' + cellInfo.value + '</span>' }"), html = TRUE, aggregate = "count", align = "left", width = 150),
             kq3x  = colDef(name = "Số lượng",  headerStyle = list(color = "black", background = "#F5DEB3", whiteSpace = "normal", textAlign = "center"), aggregate = "sum", align = "right", width = 90,  footer = function(values) sprintf("%.0f", sum(values))),
-            kq4x  = colDef(name = "Giá trị",   headerStyle = list(color = "black", background = "#F5DEB3", whiteSpace = "normal", textAlign = "center"), aggregate = "sum", align = "right", width = 100, format = colFormat(digits = 0, separators = TRUE), footer = function(values) sprintf("%s", format(sum(values), big.mark = ",", digits = 2L))),
-            kq5x  = colDef(name = "Số lượng",  headerStyle = list(color = "black", background = "#C8E2B1", whiteSpace = "normal", textAlign = "center"), aggregate = "sum", align = "right", width = 90,  footer = function(values) sprintf("%.0f", sum(values))),
-            kq6x  = colDef(name = "Giá trị",   headerStyle = list(color = "black", background = "#C8E2B1", whiteSpace = "normal", textAlign = "center"), aggregate = "sum", align = "right", width = 100, format = colFormat(digits = 0, separators = TRUE), footer = function(values) sprintf("%s", format(sum(values), big.mark = ",", digits = 2L))),
+            kq4x  = colDef(name = "Giá trị",   headerStyle = list(color = "black", background = "#F5DEB3", whiteSpace = "normal", textAlign = "center"), aggregate = "sum", align = "right", width = 100, format = colFormat(digits = 0, separators = TRUE), footer = function(values) formatC(sum(values), format = "f", digits = 0, big.mark = ",")),
+            kq5x  = colDef(name = "Số lượng",  headerStyle = list(color = "black", background = "#C8E2B1", whiteSpace = "normal", textAlign = "center"), aggregate = "sum", align = "right", width = 90, footer = function(values) formatC(sum(values), format = "f", digits = 0, big.mark = ",")),
+            kq6x  = colDef(name = "Giá trị",   headerStyle = list(color = "black", background = "#C8E2B1", whiteSpace = "normal", textAlign = "center"), aggregate = "sum", align = "right", width = 100, format = colFormat(digits = 0, separators = TRUE), footer = function(values) formatC(sum(values), format = "f", digits = 0, big.mark = ",")),
             kq7x  = colDef(name = "Số lượng",  headerStyle = list(color = "black", background = "#BFCAE6", whiteSpace = "normal", textAlign = "center"), aggregate = "sum", align = "right", width = 90,  footer = function(values) sprintf("%.0f", sum(values))),
-            kq8x  = colDef(name = "Giá trị",   headerStyle = list(color = "black", background = "#BFCAE6", whiteSpace = "normal", textAlign = "center"), aggregate = "sum", align = "right", width = 100, format = colFormat(digits = 0, separators = TRUE), footer = function(values) sprintf("%s", format(sum(values), big.mark = ",", digits = 2L))),
+            kq8x  = colDef(name = "Giá trị",   headerStyle = list(color = "black", background = "#BFCAE6", whiteSpace = "normal", textAlign = "center"), aggregate = "sum", align = "right", width = 100, format = colFormat(digits = 0, separators = TRUE), footer = function(values) formatC(sum(values), format = "f", digits = 0, big.mark = ",")),
             kq9x  = colDef(name = "Số lượng",  headerStyle = list(color = "black", background = "#F5DEB3", whiteSpace = "normal", textAlign = "center"), aggregate = "sum", align = "right", width = 90,  footer = function(values) sprintf("%.0f", sum(values))),
-            kq10x = colDef(name = "Giá trị",   headerStyle = list(color = "black", background = "#F5DEB3", whiteSpace = "normal", textAlign = "center"), aggregate = "sum", align = "right", width = 100, format = colFormat(digits = 0, separators = TRUE), footer = function(values) sprintf("%s", format(sum(values), big.mark = ",", digits = 2L))),
+            kq10x = colDef(name = "Giá trị",   headerStyle = list(color = "black", background = "#F5DEB3", whiteSpace = "normal", textAlign = "center"), aggregate = "sum", align = "right", width = 100, format = colFormat(digits = 0, separators = TRUE), footer = function(values) formatC(sum(values), format = "f", digits = 0, big.mark = ",")),
             kq11x = colDef(name = "Số lượng",  headerStyle = list(color = "black", background = "#F5DEB3", whiteSpace = "normal", textAlign = "center"), aggregate = "sum", align = "right", width = 100, footer = function(values) sprintf("%.0f", sum(values))),
-            kq12x = colDef(name = "Giá trị",   headerStyle = list(color = "black", background = "#F5DEB3", whiteSpace = "normal", textAlign = "center"), aggregate = "sum", align = "right", width = 100, format = colFormat(digits = 0, separators = TRUE), footer = function(values) sprintf("%s", format(sum(values), big.mark = ",", digits = 2L)))
+            kq12x = colDef(name = "Giá trị",   headerStyle = list(color = "black", background = "#F5DEB3", whiteSpace = "normal", textAlign = "center"), aggregate = "sum", align = "right", width = 100, format = colFormat(digits = 0, separators = TRUE), footer = function(values) formatC(sum(values), format = "f", digits = 0, big.mark = ","))
           )
         )
       )
@@ -733,37 +733,37 @@ shiny::fluidRow(
       aggregate = "sum", align = "right", width = 90, footer = function(values) sprintf("%.0f", sum(values))),
     
     kq8x = colDef(name = "Giá trị", headerStyle = list(color = "black", background = "#C8E2B1", whiteSpace = "normal",textAlign = "center"),
-      aggregate = "sum", align = "right", width = 100, format = colFormat(digits = 0, separators = TRUE), footer = function(values) sprintf("%s", format(sum(values), big.mark = ",", digits = 2L))),
+      aggregate = "sum", align = "right", width = 100, format = colFormat(digits = 0, separators = TRUE), footer = function(values) formatC(sum(values), format = "f", digits = 0, big.mark = ",")),
     
     kq9x = colDef(name = "Số lượng",headerStyle = list(color = "black", background = "#C8E2B1", whiteSpace = "normal",textAlign = "center"),
       aggregate = "sum", align = "right", width = 90, footer = function(values) sprintf("%.0f", sum(values))),
     
     kq10x = colDef(name = "Giá trị",headerStyle = list(color = "black", background = "#C8E2B1", whiteSpace = "normal",textAlign = "center"),
-      aggregate = "sum", align = "right", width = 100, format = colFormat(digits = 0, separators = TRUE), footer = function(values) sprintf("%s", format(sum(values), big.mark = ",", digits = 2L))),
+      aggregate = "sum", align = "right", width = 100, format = colFormat(digits = 0, separators = TRUE), footer = function(values) formatC(sum(values), format = "f", digits = 0, big.mark = ",")),
     
     kq11x = colDef(name = "Số lượng",headerStyle = list(color = "black", background = "#C8E2B1", whiteSpace = "normal",textAlign = "center"),
       aggregate = "sum", align = "right", width = 100, footer = function(values) sprintf("%.0f", sum(values))),
     
     kq12x = colDef(name = "Giá trị",headerStyle = list(color = "black", background = "#C8E2B1", whiteSpace = "normal",textAlign = "center"),
-      aggregate = "sum", align = "right", width = 100, format = colFormat(digits = 0, separators = TRUE), footer = function(values) sprintf("%s", format(sum(values), big.mark = ",", digits = 2L))),
+      aggregate = "sum", align = "right", width = 100, format = colFormat(digits = 0, separators = TRUE), footer = function(values) formatC(sum(values), format = "f", digits = 0, big.mark = ",")),
   
     kq13x = colDef(name = "Số lượng",headerStyle = list(color = "black", background = "#BFCAE6", whiteSpace = "normal",textAlign = "center"),
       aggregate = "sum", align = "right", width = 100, footer = function(values) sprintf("%.0f", sum(values))),
     
     kq14x = colDef(name = "Giá trị",headerStyle = list(color = "black", background = "#BFCAE6", whiteSpace = "normal",textAlign = "center"),
-      aggregate = "sum", align = "right", width = 100, format = colFormat(digits = 0, separators = TRUE), footer = function(values) sprintf("%s", format(sum(values), big.mark = ",", digits = 2L))),
+      aggregate = "sum", align = "right", width = 100, format = colFormat(digits = 0, separators = TRUE), footer = function(values) formatC(sum(values), format = "f", digits = 0, big.mark = ",")),
   
     kq15x = colDef(name = "Số lượng",headerStyle = list(color = "black", background = "#BFCAE6", whiteSpace = "normal",textAlign = "center"),
       aggregate = "sum", align = "right", width = 100, footer = function(values) sprintf("%.0f", sum(values))),
     
     kq16x = colDef(name = "Giá trị",headerStyle = list(color = "black", background = "#BFCAE6", whiteSpace = "normal",textAlign = "center"),
-      aggregate = "sum", align = "right", width = 100, format = colFormat(digits = 0, separators = TRUE), footer = function(values) sprintf("%s", format(sum(values), big.mark = ",", digits = 2L))),
+      aggregate = "sum", align = "right", width = 100, format = colFormat(digits = 0, separators = TRUE), footer = function(values) formatC(sum(values), format = "f", digits = 0, big.mark = ",")),
   
     kq17x = colDef(name = "Số lượng",headerStyle = list(color = "black", background = "#BFCAE6", whiteSpace = "normal",textAlign = "center"),
       aggregate = "sum", align = "right", width = 100, footer = function(values) sprintf("%.0f", sum(values))),
     
     kq18x = colDef(name = "Giá trị",headerStyle = list(color = "black", background = "#BFCAE6", whiteSpace = "normal",textAlign = "center"),
-      aggregate = "sum", align = "right", width = 100, format = colFormat(digits = 0, separators = TRUE), footer = function(values) sprintf("%s", format(sum(values), big.mark = ",", digits = 2L)))
+      aggregate = "sum", align = "right", width = 100, format = colFormat(digits = 0, separators = TRUE), footer = function(values) formatC(sum(values), format = "f", digits = 0, big.mark = ","))
   
 
   )
@@ -957,7 +957,7 @@ shiny::fluidRow(
       aggregate = "sum", align = "right", width = 90, footer = function(values) sprintf("%.0f", sum(values))),
     
     kq4x = colDef(name = "Giá trị", headerStyle = list(color = "black", background = "#F5DEB3", whiteSpace = "normal",textAlign = "center"),
-      aggregate = "sum", align = "right", width = 100, format = colFormat(digits = 0, separators = TRUE), footer = function(values) sprintf("%s", format(sum(values), big.mark = ",", digits = 2L))),
+      aggregate = "sum", align = "right", width = 100, format = colFormat(digits = 0, separators = TRUE), footer = function(values) formatC(sum(values), format = "f", digits = 0, big.mark = ",")),
     
     kq5x = colDef(name = "Số lượng", headerStyle = list(color = "black", background = "#F5DEB3", whiteSpace = "normal",textAlign = "center"),
       aggregate = "sum", align = "right", width = 90, footer = function(values) sprintf("%.0f", sum(values))),
@@ -975,19 +975,19 @@ shiny::fluidRow(
       aggregate = "sum", align = "right", width = 90, footer = function(values) sprintf("%.0f", sum(values))),
     
     kq10x = colDef(name = "Giá trị",headerStyle = list(color = "black", background = "#BFCAE6", whiteSpace = "normal",textAlign = "center"),
-      aggregate = "sum", align = "right", width = 100, format = colFormat(digits = 0, separators = TRUE), footer = function(values) sprintf("%s", format(sum(values), big.mark = ",", digits = 2L))),
+      aggregate = "sum", align = "right", width = 100, format = colFormat(digits = 0, separators = TRUE), footer = function(values) formatC(sum(values), format = "f", digits = 0, big.mark = ",")),
     
     kq11x = colDef(name = "Số lượng",headerStyle = list(color = "black", background = "#C8E2B1", whiteSpace = "normal",textAlign = "center"),
       aggregate = "sum", align = "right", width = 100, footer = function(values) sprintf("%.0f", sum(values))),
     
     kq12x = colDef(name = "Giá trị",headerStyle = list(color = "black", background = "#C8E2B1", whiteSpace = "normal",textAlign = "center"),
-      aggregate = "sum", align = "right", width = 100, format = colFormat(digits = 0, separators = TRUE), footer = function(values) sprintf("%s", format(sum(values), big.mark = ",", digits = 2L))),
+      aggregate = "sum", align = "right", width = 100, format = colFormat(digits = 0, separators = TRUE), footer = function(values) formatC(sum(values), format = "f", digits = 0, big.mark = ",")),
   
     kq13x = colDef(name = "Số lượng",headerStyle = list(color = "black", background = "#E8D3E3", whiteSpace = "normal",textAlign = "center"),
       aggregate = "sum", align = "right", width = 100, footer = function(values) sprintf("%.0f", sum(values))),
     
     kq14x = colDef(name = "Giá trị",headerStyle = list(color = "black", background = "#E8D3E3", whiteSpace = "normal",textAlign = "center"),
-      aggregate = "sum", align = "right", width = 100, format = colFormat(digits = 0, separators = TRUE), footer = function(values) sprintf("%s", format(sum(values), big.mark = ",", digits = 2L)))
+      aggregate = "sum", align = "right", width = 100, format = colFormat(digits = 0, separators = TRUE), footer = function(values) formatC(sum(values), format = "f", digits = 0, big.mark = ","))
   
 
   )
@@ -1311,25 +1311,25 @@ shiny::fluidRow(
       aggregate = "sum", align = "right", width = 100, footer = function(values) sprintf("%.0f", sum(values))),
     
     kq8x = colDef(name = "Giá trị", headerStyle = list(color = "black", background = "#F5DEB3", whiteSpace = "normal",textAlign = "center"),
-      aggregate = "sum", align = "right", width = 100, format = colFormat(digits = 0, separators = TRUE), footer = function(values) sprintf("%s", format(sum(values), big.mark = ",", digits = 2L))),
+      aggregate = "sum", align = "right", width = 100, format = colFormat(digits = 0, separators = TRUE), footer = function(values) formatC(sum(values), format = "f", digits = 0, big.mark = ",")),
     
     kq9x = colDef(name = "Số lượng",headerStyle = list(color = "black", background = "#BFCAE6", whiteSpace = "normal",textAlign = "center"),
       aggregate = "sum", align = "right", width = 100, footer = function(values) sprintf("%.0f", sum(values))),
     
     kq10x = colDef(name = "Giá trị",headerStyle = list(color = "black", background = "#BFCAE6", whiteSpace = "normal",textAlign = "center"),
-      aggregate = "sum", align = "right", width = 100, format = colFormat(digits = 0, separators = TRUE), footer = function(values) sprintf("%s", format(sum(values), big.mark = ",", digits = 2L))),
+      aggregate = "sum", align = "right", width = 100, format = colFormat(digits = 0, separators = TRUE), footer = function(values) formatC(sum(values), format = "f", digits = 0, big.mark = ",")),
     
     kq11x = colDef(name = "Số lượng",headerStyle = list(color = "black", background = "#BFCAE6", whiteSpace = "normal",textAlign = "center"),
       aggregate = "sum", align = "right", width = 100, footer = function(values) sprintf("%.0f", sum(values))),
     
     kq12x = colDef(name = "Giá trị",headerStyle = list(color = "black", background = "#BFCAE6", whiteSpace = "normal",textAlign = "center"),
-      aggregate = "sum", align = "right", width = 100, format = colFormat(digits = 0, separators = TRUE), footer = function(values) sprintf("%s", format(sum(values), big.mark = ",", digits = 2L))),
+      aggregate = "sum", align = "right", width = 100, format = colFormat(digits = 0, separators = TRUE), footer = function(values) formatC(sum(values), format = "f", digits = 0, big.mark = ",")),
   
     kq13x = colDef(name = "Số lượng",headerStyle = list(color = "black", background = "#BFCAE6", whiteSpace = "normal",textAlign = "center"),
       aggregate = "sum", align = "right", width = 100, footer = function(values) sprintf("%.0f", sum(values))),
     
     kq14x = colDef(name = "Giá trị",headerStyle = list(color = "black", background = "#BFCAE6", whiteSpace = "normal",textAlign = "center"),
-      aggregate = "sum", align = "right", width = 100, format = colFormat(digits = 0, separators = TRUE), footer = function(values) sprintf("%s", format(sum(values), big.mark = ",", digits = 2L)))
+      aggregate = "sum", align = "right", width = 100, format = colFormat(digits = 0, separators = TRUE), footer = function(values) formatC(sum(values), format = "f", digits = 0, big.mark = ","))
   
 
   )
