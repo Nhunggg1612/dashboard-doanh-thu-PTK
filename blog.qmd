@@ -558,14 +558,14 @@ b2c_aio1 %>%
             
             so_dk = sum(!is.na(ma_hd) & cn_thangdk == thang_n, na.rm = TRUE),
             gtri_dk = round(sum(gtri[!is.na(ma_hd) & cn_thangdk == thang_n], na.rm = TRUE)/10^6,0),
-            so_chuathicong = sum(!is.na(ma_hd) & cn_tiendo == "Chưa thi công", na.rm = TRUE),
-            gtri_chuathicong = round(sum(gtri[!is.na(ma_hd) & cn_tiendo == "Chưa thi công"], na.rm = TRUE)/10^6,0),
-            so_dangthicong = sum(!is.na(ma_hd) & cn_tiendo == "Đang thi công", na.rm = TRUE),
-            gtri_dangthicong = round(sum(gtri[!is.na(ma_hd) & cn_tiendo == "Đang thi công"], na.rm = TRUE)/10^6,0),
-            so_thicongxong = sum(!is.na(ma_hd) & cn_tiendo == "Thi công xong" | cn_tiendo ==  "Đã có BBNT", na.rm = TRUE),
-            gtri_thicongxong = round(sum(gtri[!is.na(ma_hd) & cn_tiendo == "Thi công xong" | cn_tiendo ==  "Đã có BBNT"], na.rm = TRUE)/10^6,0),
-            so_kodientiendo = sum(!is.na(ma_hd) & is.na(cn_tiendo), na.rm = TRUE),
-            gtri_kodientiendo = round(sum(gtri[!is.na(ma_hd) & is.na(cn_tiendo)], na.rm = TRUE)/10^6,0)
+            so_chuathicong = sum(!is.na(ma_hd) & cn_tiendo == "Chưa thi công" & cn_thangdk == thang_n, na.rm = TRUE),
+            gtri_chuathicong = round(sum(gtri[!is.na(ma_hd) & cn_tiendo == "Chưa thi công" & cn_thangdk == thang_n], na.rm = TRUE)/10^6,0),
+            so_dangthicong = sum(!is.na(ma_hd) & cn_tiendo == "Đang thi công" & cn_thangdk == thang_n, na.rm = TRUE),
+            gtri_dangthicong = round(sum(gtri[!is.na(ma_hd) & cn_tiendo == "Đang thi công" & cn_thangdk == thang_n], na.rm = TRUE)/10^6,0),
+            so_thicongxong = sum(!is.na(ma_hd) & cn_thangdk == thang_n & cn_tiendo == "Thi công xong" | cn_tiendo ==  "Đã có BBNT", na.rm = TRUE),
+            gtri_thicongxong = round(sum(gtri[!is.na(ma_hd) & cn_thangdk == thang_n & cn_tiendo == "Thi công xong" | cn_tiendo ==  "Đã có BBNT"], na.rm = TRUE)/10^6,0),
+            so_kodientiendo = sum(!is.na(ma_hd) & is.na(cn_tiendo) & cn_thangdk == thang_n, na.rm = TRUE),
+            gtri_kodientiendo = round(sum(gtri[!is.na(ma_hd) & is.na(cn_tiendo) & cn_thangdk == thang_n], na.rm = TRUE)/10^6,0)
             ) -> bc_tiendo_cnct
 
 
