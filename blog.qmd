@@ -152,10 +152,9 @@ now <- format(
 
 ```{r, warning=FALSE, message=FALSE, results = 'hide', echo = FALSE}
 b2c_aio1 %>%
-  filter(thang_dk_DT == thang_n) %>%
   group_by(ma_tinh, am) %>%
-  summarise(gtri_dk = sum(gtri[!is.na(ma_hd)], na.rm = TRUE)/10^6,
-            so_hd_dk = sum(!is.na(ma_hd), na.rm = TRUE),
+  summarise(gtri_dk = sum(gtri[!is.na(ma_hd) & thang_dk_DT == thang_n], na.rm = TRUE)/10^6,
+            so_hd_dk = sum(!is.na(ma_hd) & thang_dk_DT == thang_n, na.rm = TRUE),
             gtri_dt = round(sum(gtri[!is.na(ma_hd) & !is.na(thang_DT)], na.rm = TRUE)/10^6,0),
             so_hd = sum(!is.na(ma_hd) & !is.na(thang_DT), na.rm = TRUE),
             ty_le = gtri_dt*100/gtri_dk) -> bc_dk_dt
