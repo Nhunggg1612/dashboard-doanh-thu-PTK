@@ -370,16 +370,15 @@ function(el, x) {
 
 ```{r, warning=FALSE, message=FALSE, results = 'hide', echo = FALSE}
 b2c_aio1 %>%
-  filter(thang_dk_DT == thang_n) %>%
   group_by(ma_tinh, am) %>%
-  summarise(so_dk = sum(!is.na(ma_hd)),
-            gtri_dk = sum(gtri[!is.na(ma_hd)], na.rm = TRUE)/10^6,
+  summarise(so_dk = sum(!is.na(ma_hd) & thang_dk_DT == thang_n),
+            gtri_dk = sum(gtri[!is.na(ma_hd)  & thang_dk_DT == thang_n], na.rm = TRUE)/10^6,
             so_dt = sum(!is.na(ma_hd) & !is.na(thang_DT), na.rm = TRUE),
             gtri_dt = round(sum(gtri[!is.na(ma_hd) & !is.na(thang_DT)], na.rm = TRUE)/10^6,0),
-            so_chua_dt = sum(!is.na(ma_hd) & is.na(thang_DT), na.rm = TRUE),
-            gtri_chua_dt = round(sum(gtri[!is.na(ma_hd) & is.na(thang_DT)], na.rm = TRUE)/10^6,0),
-            so_chua_dt_chac = sum(!is.na(ma_hd) & is.na(thang_DT) & chac_chan == "Chắc chắn", na.rm = TRUE),
-            gtri_chua_dt_chac = round(sum(gtri[!is.na(ma_hd) & is.na(thang_DT) & chac_chan == "Chắc chắn"], na.rm = TRUE)/10^6,0),
+            so_chua_dt = sum(!is.na(ma_hd) & is.na(thang_DT)  & thang_dk_DT == thang_n, na.rm = TRUE),
+            gtri_chua_dt = round(sum(gtri[!is.na(ma_hd) & is.na(thang_DT)  & thang_dk_DT == thang_n], na.rm = TRUE)/10^6,0),
+            so_chua_dt_chac = sum(!is.na(ma_hd) & is.na(thang_DT) & chac_chan == "Chắc chắn"  & thang_dk_DT == thang_n, na.rm = TRUE),
+            gtri_chua_dt_chac = round(sum(gtri[!is.na(ma_hd) & is.na(thang_DT) & chac_chan == "Chắc chắn"  & thang_dk_DT == thang_n], na.rm = TRUE)/10^6,0),
             so_chua_dt_50 = so_chua_dt - so_chua_dt_chac,
             gtri_chua_dt_50 = gtri_chua_dt - gtri_chua_dt_chac) -> bc_dkdt_n
 
