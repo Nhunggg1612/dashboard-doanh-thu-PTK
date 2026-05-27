@@ -371,7 +371,7 @@ function(el, x) {
 ```{r, warning=FALSE, message=FALSE, results = 'hide', echo = FALSE}
 b2c_aio1 %>%
   group_by(ma_tinh, am) %>%
-  summarise(so_dk = sum(!is.na(ma_hd) & thang_dk_DT == thang_n),
+  summarise(so_dk = sum(!is.na(ma_hd) & thang_dk_DT == thang_n, na.rm = TRUE),
             gtri_dk = sum(gtri[!is.na(ma_hd)  & thang_dk_DT == thang_n], na.rm = TRUE)/10^6,
             so_dt = sum(!is.na(ma_hd) & !is.na(thang_DT), na.rm = TRUE),
             gtri_dt = round(sum(gtri[!is.na(ma_hd) & !is.na(thang_DT)], na.rm = TRUE)/10^6,0),
