@@ -75,7 +75,8 @@ jobs:
             "shinydashboard",
             "shinyWidgets",
             "jsonlite",
-            "htmlwidgets"
+            "htmlwidgets",
+            "htmltools"
           ))
         shell: Rscript {0}
 
