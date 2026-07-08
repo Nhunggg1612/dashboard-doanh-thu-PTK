@@ -155,9 +155,9 @@ b2c_aio1 %>%
   group_by(ma_tinh, am) %>%
   summarise(gtri_dk = sum(gtri[!is.na(ma_hd) & thang_dk_DT == thang_n], na.rm = TRUE)/10^6,
             so_hd_dk = sum(!is.na(ma_hd) & thang_dk_DT == thang_n, na.rm = TRUE),
-            gtri_dt = round(sum(gtri[!is.na(ma_hd) & !is.na(thang_DT)], na.rm = TRUE)/10^6,0),
-            so_hd = sum(!is.na(ma_hd) & !is.na(thang_DT), na.rm = TRUE),
-            ty_le = gtri_dt*100/gtri_dk) -> bc_dk_dt
+            gtri_dt = round(sum(gtri[!is.na(ma_hd) & !is.na(thang_DT) & thang_DT != "NULL"], na.rm = TRUE)/10^6,0),
+            so_hd = sum(!is.na(ma_hd) & !is.na(thang_DT) & thang_DT != "NULL", na.rm = TRUE),
+            ty_le = ifelse(gtri_dk == 0, 0, gtri_dt*100/gtri_dk)) -> bc_dk_dt
 bc_dk_dt <- bc_dk_dt %>% arrange(desc(am), ma_tinh)
 ```
 
@@ -1112,7 +1112,7 @@ highchart() %>%
     )
   ) %>%
   hc_add_series(
-    name = "Số HĐ lên DT",
+    name = "Số HĐ TC xong - CNCT confirm",
     data = round(bc_lendoanhthu$so_hd, 0),
     type = "spline",
     yAxis = 0,  # ← sửa từ 1 thành 0
