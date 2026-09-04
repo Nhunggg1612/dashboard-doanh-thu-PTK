@@ -1222,7 +1222,7 @@ tagList(
     tags$button(id = "btn-tai-anh-1", "⬇ PNG",
                 style = "padding:5px 12px; cursor:pointer; font-family:cambria;")
   ),
-  hc
+  hc_1
 )
 ```
 
