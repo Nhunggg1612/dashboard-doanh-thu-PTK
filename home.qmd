@@ -63,10 +63,10 @@ if (Sys.getenv("GCP_SERVICE_ACCOUNT") != "") {
   # Chạy local → đăng nhập thủ công
   gs4_auth()
 }
-sheet_url <- "https://docs.google.com/spreadsheets/d/1-FhaD8Aa6oD09jQCUMk9u3CfIFyz2gyLyF2lNWYohl8/edit?gid=1614911787#gid=1614911787"
+sheet_url <- "https://docs.google.com/spreadsheets/d/1WLxPG7Ef5pvjqrosb97hUovETDbYYvdopbwPelx2rvU/edit?gid=234198743#gid=234198743"
 b2c_aio <- read_sheet(sheet_url, sheet = "Chi tiết")
 
-b2c_aio1 <- b2c_aio[-c(1:4),c(1,2,3,10:21,25:28, 30:35, 37:38, 42:44,46,50,52:53,59,65,68,71,72,75,76,77,78,82)]
+b2c_aio1 <- b2c_aio[-c(1:4),c(1,2,3,10:21,25:28, 30:35, 37:38, 42:44,46,50,52:53,59,65,68,74,75,78,79,80,81,85)]
 n_aio <- c("don_huy", "ma_tinh", "ma_hd", "gtri", "namthang_ky", "ngay_ky", "dich_vu", "thang_DT", "ngay_ht" ,"ngay_tam_ung", "gtri_tam_ung", "loai_pin", "ma_pin", "ten_pin", "so_pin", "loai_inver", "ma_inver", "ten_inver", "so_inver", "ngay_cap_inver", "dambao_inver", "loai_acquy", "ma_acquy", "ten_acquy", "so_acquy", "ngay_cap_acquy", "dambao_acquy", "Ngay_KD_BG", "Ngay_KT_nhan", "Ngay_KT_tuchoi1", "Ngay_KT_tuchoin", "TTQH", "KV", "am","tyle_tamung" ,"thang_dk_DT", "chac_chan","cn_matbang", "cn_hanghoa", "cn_tiendo", "cn_thangdk", "cn_ngaybatdau", "cn_ngaythicongxong","time_ky")
 colnames(b2c_aio1) <- n_aio
 
