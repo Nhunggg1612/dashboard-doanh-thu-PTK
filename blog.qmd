@@ -47,6 +47,7 @@ library(ggiraph)
 library(googlesheets4)
 library(shinydashboard)
 library(shinyWidgets)
+
 ```
 
 ```{r, warning=FALSE, message=FALSE, results = 'hide', echo = FALSE}
@@ -1154,21 +1155,21 @@ library(highcharter); library(dplyr); library(tidyr)
 library(jsonlite); library(htmltools); library(htmlwidgets)
 
 # 1. Chuẩn bị dữ liệu: mỗi phòng đều có đủ mốc ngày (thiếu -> 0)
-all_dates <- sort(unique(bc_lendoanhthu$cn_ngaythicongxong))
-phongs    <- c("Tổng", setdiff(unique(bc_lendoanhthu$am), "Tổng"))
+all_dates_1 <- sort(unique(bc_lendoanhthu$cn_ngaythicongxong))
+phongs_1    <- c("Tổng", setdiff(unique(bc_lendoanhthu$am), "Tổng"))
 
-dat <- expand_grid(am = phongs, cn_ngaythicongxong = all_dates) %>%
+dat_1 <- expand_grid(am = phongs_1, cn_ngaythicongxong = all_dates_1) %>%
   left_join(bc_lendoanhthu, by = c("am", "cn_ngaythicongxong")) %>%
   mutate(so_hd = replace_na(so_hd, 0)) %>%
   arrange(am, cn_ngaythicongxong)
 
-series_data <- lapply(phongs, function(p) round(dat$so_hd[dat$am == p], 0))
-names(series_data) <- phongs
+series_data_1 <- lapply(phongs_1, function(p) round(dat_1$so_hd[dat_1$am == p], 0))
+names(series_data_1) <- phongs_1
 
 # 2. Vẽ chart, mặc định hiển thị "Tổng"
-hc <- highchart() %>%
+hc_1 <- highchart() %>%
   hc_chart(type = "column") %>%
-  hc_xAxis(categories = as.character(all_dates),
+  hc_xAxis(categories = as.character(all_dates_1),
            labels = list(style = list(fontSize = "12px", fontFamily = "cambria"))) %>%
   hc_title(text = "Số HĐ TC xong theo ngày - Tổng", margin = 20, align = "center",
            style = list(color = "black", fontWeight = "bold",
@@ -1177,7 +1178,7 @@ hc <- highchart() %>%
            title = list(text = "Số HĐ",
                         style = list(fontWeight = "bold", fontSize = "15px", fontFamily = "cambria")),
            labels = list(style = list(fontSize = "12px", fontFamily = "cambria"))) %>%
-  hc_add_series(name = "Số HĐ", data = series_data[["Tổng"]], type = "spline",
+  hc_add_series(name = "Số HĐ", data = series_data_1[["Tổng"]], type = "spline",
                 dataLabels = list(enabled = TRUE, format = "{y}")) %>%
   hc_tooltip(headerFormat = "<b>{point.key}</b><br>", pointFormat = "{series.name}: {point.y}") %>%
   hc_colors(c("#645889")) %>%
@@ -1187,25 +1188,25 @@ hc <- highchart() %>%
   hc_add_dependency("modules/offline-exporting.js")   # tải ảnh không cần internet
 
 # 3. Gắn JS xử lý filter + nút tải ảnh
-hc <- hc %>% onRender(sprintf("
+hc_1 <- hc_1 %>% onRender(sprintf("
 function(el, x) {
   var data = %s;
   var chart = Highcharts.charts.filter(function(c){
     return c && c.renderTo && (c.renderTo === el || el.contains(c.renderTo));
   })[0];
 
-  document.getElementById('filter-phong').addEventListener('change', function() {
+  document.getElementById('filter-phong-1').addEventListener('change', function() {
     var p = this.value;
     chart.series[0].setData(data[p], false);
     chart.setTitle({text: 'Số HĐ TC xong theo ngày - ' + p}, false);
     chart.redraw();
   });
 
-  document.getElementById('btn-tai-anh').addEventListener('click', function() {
-    var opt = {type: 'image/png', filename: 'PAKH_' + document.getElementById('filter-phong').value};
+  document.getElementById('btn-tai-anh-1').addEventListener('click', function() {
+    var opt = {type: 'image/png', filename: 'PAKH_' + document.getElementById('filter-phong-1').value};
     if (chart.exportChartLocal) { chart.exportChartLocal(opt); } else { chart.exportChart(opt); }
   });
-}", toJSON(series_data, auto_unbox = FALSE)))
+}", toJSON(series_data_1, auto_unbox = FALSE)))
 
 # 4. Dropdown + button + chart
 tagList(
@@ -1213,12 +1214,12 @@ tagList(
     style = "display:flex; gap:10px; align-items:center; margin-bottom:10px; font-family:cambria;",
     tags$label("AM:", style = "font-weight:bold;"),
     tags$select(
-      id = "filter-phong",
+      id = "filter-phong-1",
       style = "padding:4px 8px; font-family:cambria; font-size:14px;",
-      lapply(phongs, function(p)
+      lapply(phongs_1, function(p)
         tags$option(value = p, selected = if (p == "Tổng") "selected", p))
     ),
-    tags$button(id = "btn-tai-anh", "⬇ PNG",
+    tags$button(id = "btn-tai-anh-1", "⬇ PNG",
                 style = "padding:5px 12px; cursor:pointer; font-family:cambria;")
   ),
   hc
