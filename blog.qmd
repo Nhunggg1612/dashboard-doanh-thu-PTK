@@ -1074,6 +1074,124 @@ bc_lendoanhthu <- rbind(bc_lendoanhthu_1, bc_lendoanhthu_2)
 
 ```
 
+```{r, out.width='150%', fig.width=7, fig.height=4, echo=FALSE, warning=FALSE, message=FALSE}
+library(highcharter); library(dplyr); library(tidyr)
+
+# 1. Chuẩn bị dữ liệu: mỗi AM đều có đủ mốc ngày (thiếu -> 0)
+all_dates <- sort(unique(bc_ngaybatdau$cn_ngaybatdau))
+phongs    <- c("Tổng", setdiff(unique(bc_ngaybatdau$am), "Tổng"))
+
+dat <- expand_grid(am = phongs, cn_ngaybatdau = all_dates) %>%
+  left_join(bc_ngaybatdau, by = c("am", "cn_ngaybatdau")) %>%
+  mutate(so_hd = replace_na(so_hd, 0)) %>%
+  arrange(am, cn_ngaybatdau)
+
+# 2. Bảng màu, lặp lại nếu số AM nhiều hơn số màu
+pal <- c("#645889", "#E4572E", "#17BEBB", "#76B041", "#FFC914", "#D7263D",
+         "#1B98E0", "#8D6A9F", "#F46036", "#2E8B57")
+pal <- rep(pal, length.out = length(phongs))
+
+# 3. Vẽ chart nền
+hc_a <- highchart() %>%
+  hc_chart(type = "spline") %>%
+  hc_xAxis(categories = as.character(all_dates), crosshair = TRUE,
+           labels = list(style = list(fontSize = "12px", fontFamily = "cambria"))) %>%
+  hc_title(text = "Số HĐ bắt đầu TC theo ngày - Theo AM", margin = 20, align = "center",
+           style = list(color = "black", fontWeight = "bold",
+                        fontFamily = "cambria", fontSize = "20px")) %>%
+  hc_yAxis(lineWidth = 3, min = 0,
+           title = list(text = "Số HĐ",
+                        style = list(fontWeight = "bold", fontSize = "15px", fontFamily = "cambria")),
+           labels = list(style = list(fontSize = "12px", fontFamily = "cambria"))) %>%
+  hc_plotOptions(spline = list(marker = list(enabled = FALSE, symbol = "circle"),
+                               states = list(hover = list(lineWidthPlus = 1)))) %>%
+  hc_tooltip(shared = TRUE, crosshairs = TRUE,
+             headerFormat = "<b>{point.key}</b><br>",
+             pointFormat = "<span style='color:{series.color}'>\u25CF</span> {series.name}: <b>{point.y}</b><br>") %>%
+  hc_legend(enabled = TRUE, align = "center", verticalAlign = "bottom",
+            itemStyle = list(color = "black", fontWeight = "bold",
+                             fontFamily = "cambria", fontSize = "13px")) %>%
+  hc_exporting(enabled = TRUE, filename = "xu-huong-PAKH") %>%
+  hc_add_dependency("modules/offline-exporting.js")
+
+# 4. Thêm mỗi AM một đường
+for (i in seq_along(phongs)) {
+  p <- phongs[i]
+  hc_a <- hc_a %>%
+    hc_add_series(
+      name      = p,
+      data      = round(dat$so_hd[dat$am == p], 0),
+      color     = pal[i],
+      lineWidth = if (p == "Tổng") 4 else 2,
+      dashStyle = if (p == "Tổng") "Solid" else "Solid",
+      visible   = TRUE,          # đổi thành (p == "Tổng") nếu muốn mặc định chỉ hiện Tổng
+      zIndex    = if (p == "Tổng") 10 else 1,
+      dataLabels = list(enabled = FALSE)
+    )
+}
+
+hc_a
+```
+
+```{r, out.width='150%', fig.width=7, fig.height=4, echo=FALSE, warning=FALSE, message=FALSE}
+library(highcharter); library(dplyr); library(tidyr)
+
+# 1. Chuẩn bị dữ liệu: mỗi AM đều có đủ mốc ngày (thiếu -> 0)
+all_dates <- sort(unique(bc_lendoanhthu$cn_ngaythicongxong))
+phongs    <- c("Tổng", setdiff(unique(bc_lendoanhthu$am), "Tổng"))
+
+dat <- expand_grid(am = phongs, cn_ngaythicongxong = all_dates) %>%
+  left_join(bc_lendoanhthu, by = c("am", "cn_ngaybatdau")) %>%
+  mutate(so_hd = replace_na(so_hd, 0)) %>%
+  arrange(am, cn_ngaythicongxong)
+
+# 2. Bảng màu, lặp lại nếu số AM nhiều hơn số màu
+pal <- c("#645889", "#E4572E", "#17BEBB", "#76B041", "#FFC914", "#D7263D",
+         "#1B98E0", "#8D6A9F", "#F46036", "#2E8B57")
+pal <- rep(pal, length.out = length(phongs))
+
+# 3. Vẽ chart nền
+hc_b <- highchart() %>%
+  hc_chart(type = "spline") %>%
+  hc_xAxis(categories = as.character(all_dates), crosshair = TRUE,
+           labels = list(style = list(fontSize = "12px", fontFamily = "cambria"))) %>%
+  hc_title(text = "Số HĐ TC xong theo ngày - Theo AM", margin = 20, align = "center",
+           style = list(color = "black", fontWeight = "bold",
+                        fontFamily = "cambria", fontSize = "20px")) %>%
+  hc_yAxis(lineWidth = 3, min = 0,
+           title = list(text = "Số HĐ",
+                        style = list(fontWeight = "bold", fontSize = "15px", fontFamily = "cambria")),
+           labels = list(style = list(fontSize = "12px", fontFamily = "cambria"))) %>%
+  hc_plotOptions(spline = list(marker = list(enabled = FALSE, symbol = "circle"),
+                               states = list(hover = list(lineWidthPlus = 1)))) %>%
+  hc_tooltip(shared = TRUE, crosshairs = TRUE,
+             headerFormat = "<b>{point.key}</b><br>",
+             pointFormat = "<span style='color:{series.color}'>\u25CF</span> {series.name}: <b>{point.y}</b><br>") %>%
+  hc_legend(enabled = TRUE, align = "center", verticalAlign = "bottom",
+            itemStyle = list(color = "black", fontWeight = "bold",
+                             fontFamily = "cambria", fontSize = "13px")) %>%
+  hc_exporting(enabled = TRUE, filename = "xu-huong-PAKH") %>%
+  hc_add_dependency("modules/offline-exporting.js")
+
+# 4. Thêm mỗi AM một đường
+for (i in seq_along(phongs)) {
+  p <- phongs[i]
+  hc_b <- hc_b %>%
+    hc_add_series(
+      name      = p,
+      data      = round(dat$so_hd[dat$am == p], 0),
+      color     = pal[i],
+      lineWidth = if (p == "Tổng") 4 else 2,
+      dashStyle = if (p == "Tổng") "Solid" else "Solid",
+      visible   = TRUE,          # đổi thành (p == "Tổng") nếu muốn mặc định chỉ hiện Tổng
+      zIndex    = if (p == "Tổng") 10 else 1,
+      dataLabels = list(enabled = FALSE)
+    )
+}
+
+hc_b
+```
+
 ```{r,out.width = '150%',fig.width=7, fig.height=4, echo = FALSE, warning=FALSE, message=FALSE}
 library(highcharter); library(dplyr); library(tidyr)
 library(jsonlite); library(htmltools); library(htmlwidgets)
