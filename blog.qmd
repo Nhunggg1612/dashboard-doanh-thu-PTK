@@ -1141,7 +1141,7 @@ all_dates <- sort(unique(bc_lendoanhthu$cn_ngaythicongxong))
 phongs    <- c("Tổng", setdiff(unique(bc_lendoanhthu$am), "Tổng"))
 
 dat <- expand_grid(am = phongs, cn_ngaythicongxong = all_dates) %>%
-  left_join(bc_lendoanhthu, by = c("am", "cn_ngaybatdau")) %>%
+  left_join(bc_lendoanhthu, by = c("am", "cn_ngaythicongxong")) %>%
   mutate(so_hd = replace_na(so_hd, 0)) %>%
   arrange(am, cn_ngaythicongxong)
 
