@@ -388,11 +388,11 @@ b2c_aio1 %>%
             gtri_chua_dt = round(sum(gtri[!is.na(ma_hd) & (is.na(thang_DT) | thang_DT == "NULL")], na.rm = TRUE)/10^6,0),
             so_du_tien = sum(!is.na(ma_hd) & (is.na(thang_DT) | thang_DT == "NULL") & tyle_tamung >= 1, na.rm = TRUE),
             gtri_du_tien = round(sum(gtri[!is.na(ma_hd) & (is.na(thang_DT) | thang_DT == "NULL") & tyle_tamung >= 1], na.rm = TRUE)/10^6,0),
-            so_ky_bbnt = sum(!is.na(ma_hd) & (is.na(thang_DT) | thang_DT == "NULL") & tyle_tamung < 1 & (is.na(ngay_ky_bbnt) | ngay_ky_bbnt != "NULL"), na.rm = TRUE),
-            gtri_ky_bbnt = round(sum(gtri[!is.na(ma_hd) & (is.na(thang_DT) | thang_DT == "NULL") & tyle_tamung < 1 & (is.na(ngay_ky_bbnt) | ngay_ky_bbnt != "NULL")], na.rm = TRUE)/10^6,0),
+            so_ky_bbnt = sum(!is.na(ma_hd) & (is.na(thang_DT) | thang_DT == "NULL") & tyle_tamung < 1 &  ngay_ky_bbnt != "NULL", na.rm = TRUE),
+            gtri_ky_bbnt = round(sum(gtri[!is.na(ma_hd) & (is.na(thang_DT) | thang_DT == "NULL") & tyle_tamung < 1 &  ngay_ky_bbnt != "NULL"], na.rm = TRUE)/10^6,0),
             
-            so_tc_xong = sum(!is.na(ma_hd) & (is.na(thang_DT) | thang_DT == "NULL") & tyle_tamung < 1 & (!is.na(ngay_ky_bbnt) | ngay_ky_bbnt == "NULL") & (cn_tiendo == "Thi công xong" | cn_tiendo == "Đã có BBNT"), na.rm = TRUE),
-            gtri_tc_xong = round(sum(gtri[!is.na(ma_hd) & (is.na(thang_DT) | thang_DT == "NULL") & tyle_tamung < 1 & (!is.na(ngay_ky_bbnt) | ngay_ky_bbnt == "NULL")  & (cn_tiendo == "Thi công xong" | cn_tiendo == "Đã có BBNT")], na.rm = TRUE)/10^6,0)
+            so_tc_xong = sum(!is.na(ma_hd) & (is.na(thang_DT) | thang_DT == "NULL") & tyle_tamung < 1 & ngay_ky_bbnt == "NULL" & (cn_tiendo == "Thi công xong" | cn_tiendo == "Đã có BBNT"), na.rm = TRUE),
+            gtri_tc_xong = round(sum(gtri[!is.na(ma_hd) & (is.na(thang_DT) | thang_DT == "NULL") & tyle_tamung < 1 &  ngay_ky_bbnt == "NULL"  & (cn_tiendo == "Thi công xong" | cn_tiendo == "Đã có BBNT")], na.rm = TRUE)/10^6,0)
             ) -> bc_rank_am
 
 ```
