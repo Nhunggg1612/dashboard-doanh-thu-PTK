@@ -1372,17 +1372,45 @@ hc_a <- highchart() %>%
 
 # 4. Thêm mỗi AM một đường
 for (i in seq_along(phongs)) {
-  p <- phongs[i]
+  p       <- phongs[i]
+  la_tong <- (p == "Tổng")
+
   hc_a <- hc_a %>%
     hc_add_series(
       name      = p,
       data      = round(dat$so_hd[dat$am == p], 0),
       color     = pal[i],
-      lineWidth = if (p == "Tổng") 4 else 2,
-      dashStyle = if (p == "Tổng") "Solid" else "Solid",
-      visible   = TRUE,          # đổi thành (p == "Tổng") nếu muốn mặc định chỉ hiện Tổng
-      zIndex    = if (p == "Tổng") 10 else 1,
-      dataLabels = list(enabled = FALSE)
+      lineWidth = if (la_tong) 4 else 2,
+      dashStyle = "Solid",
+      visible   = TRUE,
+      zIndex    = if (la_tong) 10 else 1,
+
+      # chỉ đường Tổng mới có point
+      marker = list(
+        enabled   = la_tong,
+        symbol    = "circle",
+        radius    = 4,
+        lineWidth = 1,
+        lineColor = "#ffffff"
+      ),
+
+      # chỉ đường Tổng mới hiện số
+      dataLabels = list(
+        enabled  = la_tong,
+        format   = "{y}",
+        align    = "center",
+        verticalAlign = "bottom",
+        y        = -6,
+        crop     = FALSE,
+        overflow = "none",
+        style    = list(
+          fontFamily = "cambria",
+          fontSize   = "11px",
+          fontWeight = "bold",
+          color      = "#645889",
+          textOutline = "2px contrast"
+        )
+      )
     )
 }
 
@@ -1430,18 +1458,47 @@ hc_b <- highchart() %>%
   hc_add_dependency("modules/offline-exporting.js")
 
 # 4. Thêm mỗi AM một đường
+
 for (i in seq_along(phongs)) {
-  p <- phongs[i]
+  p       <- phongs[i]
+  la_tong <- (p == "Tổng")
+
   hc_b <- hc_b %>%
     hc_add_series(
       name      = p,
       data      = round(dat$so_hd[dat$am == p], 0),
       color     = pal[i],
-      lineWidth = if (p == "Tổng") 4 else 2,
-      dashStyle = if (p == "Tổng") "Solid" else "Solid",
-      visible   = TRUE,          # đổi thành (p == "Tổng") nếu muốn mặc định chỉ hiện Tổng
-      zIndex    = if (p == "Tổng") 10 else 1,
-      dataLabels = list(enabled = FALSE)
+      lineWidth = if (la_tong) 4 else 2,
+      dashStyle = "Solid",
+      visible   = TRUE,
+      zIndex    = if (la_tong) 10 else 1,
+
+      # chỉ đường Tổng mới có point
+      marker = list(
+        enabled   = la_tong,
+        symbol    = "circle",
+        radius    = 4,
+        lineWidth = 1,
+        lineColor = "#ffffff"
+      ),
+
+      # chỉ đường Tổng mới hiện số
+      dataLabels = list(
+        enabled  = la_tong,
+        format   = "{y}",
+        align    = "center",
+        verticalAlign = "bottom",
+        y        = -6,
+        crop     = FALSE,
+        overflow = "none",
+        style    = list(
+          fontFamily = "cambria",
+          fontSize   = "11px",
+          fontWeight = "bold",
+          color      = "#645889",
+          textOutline = "2px contrast"
+        )
+      )
     )
 }
 
