@@ -847,8 +847,8 @@ kq13x <- accounting(unlist(bc_dambao_cnct[c(1:nrow(bc_dambao_cnct)),13]), digits
 kq14x <- accounting(unlist(bc_dambao_cnct[c(1:nrow(bc_dambao_cnct)),14]), digits = 2L, format = "d", big.mark = ",")
 kq15x <- accounting(unlist(bc_dambao_cnct[c(1:nrow(bc_dambao_cnct)),15]), digits = 2L, format = "d", big.mark = ",")
 kq16x <- accounting(unlist(bc_dambao_cnct[c(1:nrow(bc_dambao_cnct)),16]), digits = 2L, format = "d", big.mark = ",")
-kq17x <- accounting(unlist(bc_dambao_cnct[c(1:nrow(bc_dambao_cnct)),15]), digits = 2L, format = "d", big.mark = ",")
-kq18x <- accounting(unlist(bc_dambao_cnct[c(1:nrow(bc_dambao_cnct)),16]), digits = 2L, format = "d", big.mark = ",")
+kq17x <- accounting(unlist(bc_dambao_cnct[c(1:nrow(bc_dambao_cnct)),17]), digits = 2L, format = "d", big.mark = ",")
+kq18x <- accounting(unlist(bc_dambao_cnct[c(1:nrow(bc_dambao_cnct)),18]), digits = 2L, format = "d", big.mark = ",")
 
 bc_dambao_cnct_tb <- data.frame(kq1x,kq2x, kq3x, kq4x,kq5x,kq6x,kq7x,kq8x,kq9x, kq10x,kq11x,kq12x, kq13x, kq14x, kq15x, kq16x,kq17x,kq18x)
 bc_dambao_cnct_tb[3:18] <- lapply(bc_dambao_cnct_tb[3:18], as.numeric)
