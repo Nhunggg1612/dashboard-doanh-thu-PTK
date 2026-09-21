@@ -147,6 +147,9 @@ now <- format(
   "%d/%m/%Y %H:%M:%S"
 )
 
+ngay_n <- as.Date(today(), format = , format = "%Y-%m-%d")
+ngay_n_1 <- as.Date(today() - 1, format = , format = "%Y-%m-%d")
+
 ```
 
 **Cập nhật dữ liệu lúc **<strong>`r now`</strong>
@@ -420,11 +423,6 @@ rownames(bc_rank_am_tb) <- NULL
 ```
 
 ```{r,out.width = '150%', echo = FALSE, warning=FALSE, message=FALSE}
-library(crosstalk)
-library(reactable)
-library(htmltools)
-
-shared_bc_rank_am_tb <- SharedData$new(bc_rank_am_tb)
 
 library(crosstalk)
 library(reactable)
@@ -627,6 +625,242 @@ tagList(
 )
 ```
 
+### <span style="color: #C35817;font-family: cambria;">**2. Chi tiết theo tỉnh tiến độ HĐ dự kiến lên DT tháng ** <strong>`r thang_n`</strong></span>
+```{r, warning=FALSE, message=FALSE, results = 'hide', echo = FALSE}
+b2c_aio1 %>%
+  group_by(ma_tinh, am) %>%
+  summarise(batdau_n = sum(!is.na(ma_hd) & cn_ngaybatdau == ngay_n, na.rm = TRUE),
+            gtri_batdau_n = sum(gtri[!is.na(ma_hd)  & cn_ngaybatdau == ngay_n], na.rm = TRUE)/10^6,
+            xong_n = sum(!is.na(ma_hd) & cn_ngaythicongxong == ngay_n, na.rm = TRUE),
+            gtri_xong_n = sum(gtri[!is.na(ma_hd)  & cn_ngaythicongxong == ngay_n], na.rm = TRUE)/10^6,
+            dt_n = sum(!is.na(ma_hd) & ngay_ht == ngay_n, na.rm = TRUE),
+            gtri_dt_n = sum(gtri[!is.na(ma_hd)  & ngay_ht == ngay_n], na.rm = TRUE)/10^6,
+            
+            batdau_n_1 = sum(!is.na(ma_hd) & cn_ngaybatdau == ngay_n_1, na.rm = TRUE),
+            gtri_batdau_n_1 = sum(gtri[!is.na(ma_hd)  & cn_ngaybatdau == ngay_n_1], na.rm = TRUE)/10^6,
+            xong_n_1 = sum(!is.na(ma_hd) & cn_ngaythicongxong == ngay_n_1, na.rm = TRUE),
+            gtri_xong_n_1 = sum(gtri[!is.na(ma_hd)  & cn_ngaythicongxong == ngay_n_1], na.rm = TRUE)/10^6,
+            dt_n_1 = sum(!is.na(ma_hd) & ngay_ht == ngay_n_1, na.rm = TRUE),
+            gtri_dt_n_1 = sum(gtri[!is.na(ma_hd)  & ngay_ht == ngay_n_1], na.rm = TRUE)/10^6
+        ) -> bc_am_n
+
+```
+
+```{r, warning=FALSE, message=FALSE, results = 'hide', echo = FALSE}
+kq1x <- unlist(bc_am_n[1])
+kq2x <- unlist(bc_am_n[2])
+kq3x <- accounting(unlist(bc_am_n[c(1:nrow(bc_am_n)),3]), digits = 2L, format = "d", big.mark = ",")
+kq4x <- accounting(unlist(bc_am_n[c(1:nrow(bc_am_n)),4]), digits = 2L, format = "d", big.mark = ",")
+kq5x <- accounting(unlist(bc_am_n[c(1:nrow(bc_am_n)),5]), digits = 2L, format = "d", big.mark = ",")
+kq6x <- accounting(unlist(bc_am_n[c(1:nrow(bc_am_n)),6]), digits = 2L, format = "d", big.mark = ",")
+kq7x <- accounting(unlist(bc_am_n[c(1:nrow(bc_am_n)),7]), digits = 2L, format = "d", big.mark = ",")
+kq8x <- accounting(unlist(bc_am_n[c(1:nrow(bc_am_n)),8]), digits = 2L, format = "d", big.mark = ",")
+kq9x <- accounting(unlist(bc_am_n[c(1:nrow(bc_am_n)),9]), digits = 2L, format = "d", big.mark = ",")
+kq10x <- accounting(unlist(bc_am_n[c(1:nrow(bc_am_n)),10]), digits = 2L, format = "d", big.mark = ",")
+kq11x <- accounting(unlist(bc_am_n[c(1:nrow(bc_am_n)),11]), digits = 2L, format = "d", big.mark = ",")
+kq12x <- accounting(unlist(bc_am_n[c(1:nrow(bc_am_n)),12]), digits = 2L, format = "d", big.mark = ",")
+kq13x <- accounting(unlist(bc_am_n[c(1:nrow(bc_am_n)),13]), digits = 2L, format = "d", big.mark = ",")
+kq14x <- accounting(unlist(bc_am_n[c(1:nrow(bc_am_n)),14]), digits = 2L, format = "d", big.mark = ",")
+
+bc_am_n_tb <- data.frame(kq1x,kq2x, kq3x, kq4x,kq5x,kq6x,kq7x,kq8x,kq9x, kq10x,kq11x,kq12x,kq13x,kq14x)
+bc_am_n_tb[3:14] <- lapply(bc_am_n_tb[3:14], as.numeric)
+rownames(bc_am_n_tb) <- NULL
+```
+
+```{r,out.width = '150%', echo = FALSE, warning=FALSE, message=FALSE}
+
+library(crosstalk)
+library(reactable)
+library(htmltools)
+library(htmlwidgets)
+library(jsonlite)
+
+shared_bc_am_n_tb <- SharedData$new(bc_am_n_tb)
+
+# Tên các colGroup (phải khớp chính xác, liền kề nhau) sẽ gộp thành "Tiến độ"
+nhom_hom_nay <- c("Tổng HĐ triển khai","Tổng HĐ TC xong", "Tổng HĐ lên DT")
+nhom_hom_qua <- c("Tổng HĐ triển khai_N-1","Tổng HĐ TC xong_N-1", "Tổng HĐ lên DT_N-1")
+
+
+tbl <- reactable(shared_bc_am_n_tb, minRows = 3, width = 1450, height = "auto", pagination = FALSE, groupBy = "kq2x",
+          columnGroups = list(
+            colGroup("Tổng HĐ triển khai", columns = c("kq3x", "kq4x"), sticky = "left", headerStyle = list(color = "black", background = "#9AFF9A", whiteSpace = "normal", textAlign = "center")),
+            colGroup("Tổng HĐ TC xong", columns = c("kq5x", "kq6x"), sticky = "left", headerStyle = list(color = "black", background = "#9AFF9A", whiteSpace = "normal", textAlign = "center")),
+            colGroup("Tổng HĐ lên DT", columns = c("kq7x","kq8x"), sticky = "left", headerStyle = list(color = "black", background = "#9AFF9A", whiteSpace = "normal", textAlign = "center")),
+            
+            
+            colGroup("Tổng HĐ triển khai_N-1", columns = c("kq9x", "kq10x"), sticky = "left", headerStyle = list(color = "black", background = "#00A6AD", whiteSpace = "normal", textAlign = "center")),
+            colGroup("Tổng HĐ TC xong_N-1", columns = c("kq11x","kq12x"), sticky = "left", headerStyle = list(color = "black", background = "#00A6AD", whiteSpace = "normal", textAlign = "center")),
+            colGroup("Tổng HĐ lên DT_N-1", columns = c("kq13x","kq14x"), sticky = "left", headerStyle = list(color = "black", background = "#00A6AD", whiteSpace = "normal", textAlign = "center"))
+          ),
+          resizable = TRUE, wrap = FALSE, searchable = FALSE,
+          bordered = TRUE, highlight = TRUE, style = list(fontSize = "16px"),
+          rowStyle = JS("
+            function(rowInfo, state) {
+              if (rowInfo.subRows && rowInfo.subRows.length > 0) {
+                return { backgroundColor: '#FFFFFF', fontWeight: 'bold', color: '#000000', borderLeft: '2px solid transparent', transition: 'background-color 0.2s ease' };
+              } else {
+                return { borderLeft: '2px solid #ffa62d', backgroundColor: '#f5f5f5', transition: 'background-color 0.2s ease' };
+              }
+            }
+          "),
+          theme = reactableTheme(
+            headerStyle = list(background = "#F56222"),
+            rowStyle = list(`&:hover` = list(backgroundColor = "#FFE4CC !important", cursor = "pointer"))
+          ),
+          defaultColDef = colDef(
+            footerStyle = list(fontWeight = "bold", color = "#3333CC"),
+            style       = list(backgroundColor = "#FFFFFF")   # 8 cột sau luôn trắng
+          ),
+          defaultSorted = c("kq1x", "kq2x"),
+          striped = FALSE,
+          columns = list(
+            kq1x  = colDef(name = "Mã tỉnh",  headerStyle = list(color = "black", background = "#F5DEB3", whiteSpace = "normal", textAlign = "center"), aggregate = JS("function(values, rows) { return values.join(', ') }"), aggregated = JS("function(cellInfo) { return React.createElement('span', {title: cellInfo.value, style: {cursor:'help', fontWeight:'bold'}}, cellInfo.value); }"), style = JS("function(rowInfo) { if (rowInfo.subRows && rowInfo.subRows.length > 0) { return {cursor:'help', fontWeight:'bold', backgroundColor:'#f5f5f5', textDecoration:'underline dotted'}; } else { return {backgroundColor:'#f5f5f5'}; } }"), align = "left", width = 100, footer = "Tổng"),
+            kq2x  = colDef(name = "AM",        headerStyle = list(color = "black", background = "#F5DEB3", whiteSpace = "normal", textAlign = "center"), cell = JS("function(cellInfo) { return '<span title=\"Group ' + cellInfo.value + '\">' + cellInfo.value + '</span>' }"), html = TRUE, aggregate = "count", align = "left", width = 150),
+            kq3x  = colDef(name = "Số lượng",  headerStyle = list(color = "black", background = "#C8E2B1", whiteSpace = "normal", textAlign = "center"), aggregate = "sum", align = "right", width = 90,  footer = function(values) sprintf("%.0f", sum(values))),
+            kq4x  = colDef(name = "Giá trị",   headerStyle = list(color = "black", background = "#C8E2B1", whiteSpace = "normal", textAlign = "center"), aggregate = "sum", align = "right", width = 100, format = colFormat(digits = 0, separators = TRUE), footer = function(values) formatC(sum(values), format = "f", digits = 0, big.mark = ",")),
+            kq5x  = colDef(name = "Số lượng",  headerStyle = list(color = "black", background = "#C8E2B1", whiteSpace = "normal", textAlign = "center"), aggregate = "sum", align = "right", width = 90, footer = function(values) formatC(sum(values), format = "f", digits = 0, big.mark = ",")),
+            kq6x  = colDef(name = "Giá trị",   headerStyle = list(color = "black", background = "#C8E2B1", whiteSpace = "normal", textAlign = "center"), aggregate = "sum", align = "right", width = 100, format = colFormat(digits = 0, separators = TRUE), footer = function(values) formatC(sum(values), format = "f", digits = 0, big.mark = ",")),
+            kq7x  = colDef(name = "Số lượng",  headerStyle = list(color = "black", background = "#C8E2B1", whiteSpace = "normal", textAlign = "center"), aggregate = "sum", align = "right", width = 90,  footer = function(values) sprintf("%.0f", sum(values))),
+            kq8x  = colDef(name = "Giá trị",   headerStyle = list(color = "black", background = "#C8E2B1", whiteSpace = "normal", textAlign = "center"), aggregate = "sum", align = "right", width = 100, format = colFormat(digits = 0, separators = TRUE), footer = function(values) formatC(sum(values), format = "f", digits = 0, big.mark = ",")),
+            kq9x  = colDef(name = "Số lượng",  headerStyle = list(color = "black", background = "#CAE5E8", whiteSpace = "normal", textAlign = "center"), aggregate = "sum", align = "right", width = 110,  footer = function(values) sprintf("%.0f", sum(values))),
+            kq10x = colDef(name = "Giá trị",   headerStyle = list(color = "black", background = "#CAE5E8", whiteSpace = "normal", textAlign = "center"), aggregate = "sum", align = "right", width = 110, format = colFormat(digits = 0, separators = TRUE), footer = function(values) formatC(sum(values), format = "f", digits = 0, big.mark = ",")),
+            kq11x = colDef(name = "Số lượng",  headerStyle = list(color = "black", background = "#CAE5E8", whiteSpace = "normal", textAlign = "center"), aggregate = "sum", align = "right", width = 100, footer = function(values) sprintf("%.0f", sum(values))),
+            kq12x = colDef(name = "Giá trị",   headerStyle = list(color = "black", background = "#CAE5E8", whiteSpace = "normal", textAlign = "center"), aggregate = "sum", align = "right", width = 100, format = colFormat(digits = 0, separators = TRUE), footer = function(values) formatC(sum(values), format = "f", digits = 0, big.mark = ",")),
+            kq13x = colDef(name = "Số lượng",  headerStyle = list(color = "black", background = "#CAE5E8", whiteSpace = "normal", textAlign = "center"), aggregate = "sum", align = "right", width = 100, footer = function(values) sprintf("%.0f", sum(values))),
+            kq14x = colDef(name = "Giá trị",   headerStyle = list(color = "black", background = "#CAE5E8", whiteSpace = "normal", textAlign = "center"), aggregate = "sum", align = "right", width = 100, format = colFormat(digits = 0, separators = TRUE), footer = function(values) formatC(sum(values), format = "f", digits = 0, big.mark = ","))
+          )
+        )
+
+# Khai báo các nhóm cần gộp (các colGroup trong mỗi nhóm phải liền kề nhau)
+cac_nhom <- list(
+  list(nhom = nhom_hom_nay, ten = "Ngày hôm nay", mau = "#008B00"),
+  list(nhom = nhom_hom_qua, ten = "Ngày hôm qua", mau = "#008B8B")
+)
+
+tbl <- onRender(tbl, paste0("
+function(el, x) {
+  var GROUPS  = ", toJSON(cac_nhom, auto_unbox = TRUE), ";
+  var GOP_DOC = 'Đã lên DT';   /* nhóm kéo cao bằng 2 dòng (nếu có) */
+
+  function num(v) { return parseFloat(v) || 0; }
+
+  function getInner(cell) {
+    return cell.querySelector('.rt-th-content') ||
+           cell.querySelector('.rt-th-inner') || cell;
+  }
+  function setText(cell, txt) { getInner(cell).textContent = txt; }
+
+  /* Tìm chỉ số nhóm chứa tiêu đề txt, -1 nếu không thuộc nhóm nào */
+  function findGroup(txt) {
+    for (var i = 0; i < GROUPS.length; i++) {
+      var ds = [].concat(GROUPS[i].nhom);
+      if (ds.indexOf(txt) !== -1) return i;
+    }
+    return -1;
+  }
+
+  function addSuperHeader() {
+    if (!document.getElementById('_gop_css')) {
+      var css = document.createElement('style');
+      css.id = '_gop_css';
+      css.textContent =
+        '._gop_top { border-bottom:0 !important; }' +
+        '._gop_top::after, ._gop_top::before { display:none !important; }' +
+        '._gop_bot { border-top:0 !important; }';
+      document.head.appendChild(css);
+    }
+    var grpRow = el.querySelector('.rt-tr-group-header');
+    if (!grpRow) { setTimeout(addSuperHeader, 200); return; }
+    if (el.querySelector('.rt-tr-super-header')) return;   /* tránh chèn 2 lần */
+
+    var sup = grpRow.cloneNode(true);
+    sup.classList.add('rt-tr-super-header');
+    sup.querySelectorAll('.rt-resizer').forEach(function(r) { r.remove(); });
+
+    var cells  = Array.prototype.slice.call(sup.children);
+    var firsts = GROUPS.map(function() { return null; });  /* ô đầu tiên của mỗi nhóm */
+
+    cells.forEach(function(c) {
+      var txt = c.textContent.trim();
+      var g   = findGroup(txt);
+
+      if (txt === GOP_DOC) {
+        c.classList.add('_gop_top');
+        setText(c, '');
+        c.style.borderBottom = 'none';
+
+      } else if (g !== -1 && firsts[g] === null) {
+        /* Ô đầu tiên của nhóm g: đổi thành tiêu đề lớn */
+        firsts[g] = c;
+        c.style.background = GROUPS[g].mau;
+        c.style.color      = 'white';
+        c.style.textAlign  = 'center';
+        c.style.fontWeight = 'bold';
+        setText(c, GROUPS[g].ten);
+
+      } else if (g !== -1) {
+        /* Các ô tiếp theo của nhóm g: cộng độ rộng vào ô đầu rồi xoá */
+        var f = firsts[g];
+        f.style.flex     = (num(f.style.flexGrow) + num(c.style.flexGrow)) + ' 0 auto';
+        f.style.minWidth = (num(f.style.minWidth) + num(c.style.minWidth)) + 'px';
+        if (f.style.width) {
+          f.style.width = (num(f.style.width) + num(c.style.width)) + 'px';
+        }
+        c.parentNode.removeChild(c);
+
+      } else {
+        setText(c, '');
+        c.style.background = 'white';
+        c.style.border     = 'none';
+      }
+    });
+
+    grpRow.parentNode.insertBefore(sup, grpRow);
+
+    /* Đẩy chữ 'Đã lên DT' ở hàng dưới lên giữa khối 2 dòng */
+    var h1 = sup.getBoundingClientRect().height;
+    Array.prototype.forEach.call(grpRow.children, function(c) {
+      if (c.textContent.trim() !== GOP_DOC) return;
+      c.classList.add('_gop_bot');
+      c.style.zIndex = '5';
+      c.style.setProperty('box-shadow',
+        '0 -3px 0 ' + getComputedStyle(c).backgroundColor, 'important');
+      var inner = getInner(c);
+      var n = inner;
+      while (n && n !== grpRow) { n.style.overflow = 'visible'; n = n.parentNode; }
+      inner.style.position = 'relative';
+      inner.style.top      = '-' + Math.round(h1 / 2) + 'px';
+    });
+  }
+
+  setTimeout(addSuperHeader, 300);
+
+  new MutationObserver(function() {
+    if (!el.querySelector('.rt-tr-super-header')) addSuperHeader();
+  }).observe(el, { childList: true, subtree: true });
+}
+"))
+
+
+
+# Load html2canvas
+tagList(
+  tags$script(src = "https://cdnjs.cloudflare.com/ajax/libs/dom-to-image/2.6.0/dom-to-image.min.js"),
+
+  div(id = "table-wrapper-01",
+    
+    # Bảng reactable của bạn
+    shiny::fluidRow(
+      shiny::column(
+        9,
+        tbl
+      )
+    ))
+)
+```
+
+### <span style="color: #C35817;font-family: cambria;">**3. Tổng quan dự kiến lên DT tháng ** <strong>`r thang_n`</strong></span>
 
 ```{r, warning=FALSE, message=FALSE, results = 'hide', echo = FALSE}
 b2c_aio1 %>%
