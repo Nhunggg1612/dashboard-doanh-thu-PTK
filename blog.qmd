@@ -179,8 +179,9 @@ ngay_n_1 <- as.Date(today() - 1, format = , format = "%Y-%m-%d")
 
 
 ```{=html}
-<div class="pdf-toolbar" style="display:flex; justify-content:flex-end; margin:4px 0 10px 0;">
+<div class="pdf-toolbar" style="display:flex; justify-content:flex-end; margin:4px 0 10px 0; position:relative; z-index:2000;">
   <button id="btn-pdf" type="button"
+          onclick="if (window.exportReportPDF) { window.exportReportPDF(this); } else { alert('Script xuất PDF chưa được nạp trên trang này.'); }"
           style="padding:7px 18px; background:#dc3545; color:#fff; border:none; border-radius:6px;
                  cursor:pointer; font-size:14px; font-weight:600; font-family:'Segoe UI',Arial,sans-serif;">
     <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
@@ -190,6 +191,161 @@ ngay_n_1 <- as.Date(today() - 1, format = , format = "%Y-%m-%d")
   </button>
 </div>
 <div id="pdf-status" style="text-align:right; font-size:13px; color:#555; min-height:18px;"></div>
+<!-- ===== XUẤT PDF TOÀN BỘ BÁO CÁO ===== -->
+<script>
+(function () {
+  var LIBS = {
+    html2canvas: [
+      'https://cdn.jsdelivr.net/npm/html2canvas-pro@1.5.11/dist/html2canvas-pro.min.js',
+      'https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js'
+    ],
+    jspdf: [
+      'https://cdn.jsdelivr.net/npm/jspdf@2.5.2/dist/jspdf.umd.min.js',
+      'https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js'
+    ]
+  };
+
+  function setStatus(msg, color) {
+    var st = document.getElementById('pdf-status');
+    if (st) { st.textContent = msg || ''; st.style.color = color || '#555'; }
+  }
+
+  /* Tải 1 script; tạm tắt AMD 'define' để thư viện gắn vào window thay vì RequireJS */
+  function loadScript(url) {
+    return new Promise(function (resolve, reject) {
+      var s = document.createElement('script');
+      var savedDefine = window.define;
+      window.define = undefined;
+      s.src = url; s.async = true;
+      s.onload  = function () { window.define = savedDefine; resolve(); };
+      s.onerror = function () { window.define = savedDefine; reject(new Error('Không tải được ' + url)); };
+      document.head.appendChild(s);
+    });
+  }
+  async function loadFirst(urls, ready) {
+    for (var i = 0; i < urls.length; i++) {
+      if (ready()) return;
+      try { await loadScript(urls[i]); } catch (e) { console.warn(e.message); }
+    }
+    if (!ready()) throw new Error('Không tải được thư viện: ' + urls[0]);
+  }
+  function getH2C() {
+    var h = window.html2canvas;
+    return (h && typeof h !== 'function') ? h.default : h;
+  }
+
+  /* Cắt 1 canvas thành nhiều trang nếu cao hơn phần còn lại của trang */
+  function placeCanvas(pdf, canvas, wMM, hMM, y, M, CH) {
+    var pxPerMM = canvas.height / hMM, offset = 0;
+    while (offset < canvas.height) {
+      var avail = M + CH - y;
+      if (avail < 15) { pdf.addPage(); y = M; avail = CH; }
+      var slicePx = Math.max(1, Math.min(canvas.height - offset, Math.floor(avail * pxPerMM)));
+      var c = document.createElement('canvas');
+      c.width = canvas.width; c.height = slicePx;
+      var ctx = c.getContext('2d');
+      ctx.fillStyle = '#ffffff'; ctx.fillRect(0, 0, c.width, c.height);
+      ctx.drawImage(canvas, 0, offset, canvas.width, slicePx, 0, 0, canvas.width, slicePx);
+      var sh = slicePx / pxPerMM;
+      pdf.addImage(c.toDataURL('image/jpeg', 0.95), 'JPEG', M, y, wMM, sh);
+      y += sh; offset += slicePx;
+    }
+    return y;
+  }
+
+  async function exportReportPDF(btn) {
+    var oldHTML = btn.innerHTML;
+    btn.disabled = true;
+    btn.innerText = '⏳ Đang tải thư viện...';
+    setStatus('');
+    var saveY = window.scrollY;
+
+    try {
+      await loadFirst(LIBS.html2canvas, function () { return typeof getH2C() === 'function'; });
+      await loadFirst(LIBS.jspdf,       function () { return !!(window.jspdf && window.jspdf.jsPDF); });
+      var h2c = getH2C();
+
+      var main = document.querySelector('#quarto-document-content') ||
+                 document.querySelector('main') || document.body;
+      var SEL = '#title-block-header, h1, h2, h3, h4, p, div.cell, .cell-output-display';
+      var blocks = Array.prototype.slice.call(main.querySelectorAll(SEL)).filter(function (el) {
+        return !(el.parentElement && el.parentElement.closest(SEL)) &&
+               el.offsetHeight > 2 && !el.closest('.pdf-toolbar');
+      });
+      if (!blocks.length) throw new Error('Không tìm thấy nội dung để xuất');
+
+      var pdf = new window.jspdf.jsPDF({ orientation: 'landscape', unit: 'mm', format: 'a4' });
+      var PW = pdf.internal.pageSize.getWidth(), PH = pdf.internal.pageSize.getHeight();
+      var M = 10, CW = PW - 2 * M, CH = PH - 2 * M - 4;
+      var maxPx = Math.max.apply(null, blocks.map(function (el) { return el.scrollWidth; }));
+      var k = CW / maxPx, SCALE = 2;
+      var y = M, pending = [];
+
+      window.scrollTo(0, 0);
+
+      for (var i = 0; i < blocks.length; i++) {
+        btn.innerText = '⏳ Đang xuất ' + (i + 1) + '/' + blocks.length + '...';
+        var el = blocks[i];
+        var canvas = await h2c(el, {
+          scale: SCALE, backgroundColor: '#ffffff', useCORS: true, logging: false,
+          width: el.scrollWidth, height: el.scrollHeight,
+          scrollX: 0, scrollY: 0,
+          ignoreElements: function (n) { return n.tagName === 'BUTTON'; }
+        });
+        if (!canvas.width || !canvas.height) continue;
+        var wMM = canvas.width / SCALE * k, hMM = canvas.height / SCALE * k;
+
+        if (/^H[1-6]$/.test(el.tagName)) { pending.push({ c: canvas, w: wMM, h: hMM }); continue; }
+
+        var pendH = pending.reduce(function (s, p) { return s + p.h + 2; }, 0);
+        if (y + pendH + Math.min(hMM, CH) > M + CH && y > M) { pdf.addPage(); y = M; }
+        pending.forEach(function (p) { y = placeCanvas(pdf, p.c, p.w, p.h, y, M, CH) + 2; });
+        pending = [];
+        y = placeCanvas(pdf, canvas, wMM, hMM, y, M, CH) + 4;
+      }
+      pending.forEach(function (p) { y = placeCanvas(pdf, p.c, p.w, p.h, y, M, CH) + 2; });
+
+      var n = pdf.getNumberOfPages();
+      for (var p = 1; p <= n; p++) {
+        pdf.setPage(p); pdf.setFontSize(8); pdf.setTextColor(120);
+        pdf.text('Trang ' + p + '/' + n, PW - M, PH - 5, { align: 'right' });
+      }
+
+      var h2 = main.querySelector('h2');
+      var m  = h2 ? h2.textContent.match(/\d{2}-\d{4}/) : null;
+      pdf.save('Du_kien_DT_thang_' + (m ? m[0] : 'N') + '.pdf');
+      setStatus('✔ Đã tạo file PDF', '#198754');
+    } catch (err) {
+      console.error('Lỗi xuất PDF:', err);
+      setStatus('❌ ' + (err && err.message ? err.message : err), '#dc3545');
+      /* Phương án dự phòng: hộp thoại in của trình duyệt -> chọn "Lưu dưới dạng PDF" */
+      if (confirm('Không tạo được PDF tự động.\n' + (err && err.message ? err.message : '') +
+                  '\n\nMở hộp thoại In để chọn "Lưu dưới dạng PDF"?')) {
+        window.print();
+      }
+    } finally {
+      btn.innerHTML = oldHTML;
+      btn.disabled = false;
+      window.scrollTo(0, saveY);
+    }
+  }
+
+  window.exportReportPDF = exportReportPDF;
+  console.log('[PDF] Script xuất PDF đã nạp');
+})();
+</script>
+
+<style>
+  /* Dùng khi in bằng hộp thoại của trình duyệt (phương án dự phòng) */
+  @media print {
+    @page { size: A4 landscape; margin: 8mm; }
+    nav.navbar, #quarto-header, .pdf-toolbar, #pdf-status, button, footer { display: none !important; }
+    .page { max-width: 100% !important; }
+    .cell, .reactable, .highcharts-container { break-inside: avoid; page-break-inside: avoid; }
+    h2, h3, h4 { break-after: avoid; page-break-after: avoid; }
+    body { zoom: 0.6; }
+  }
+</style>
 ```
 
 ## <span style="color: #C35817;font-family: cambria;">**II. DỰ KIẾN DOANH THU THÁNG ** <strong>`r thang_n`</strong></span>
