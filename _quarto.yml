@@ -1,6 +1,8 @@
 project:
   type: website
   output-dir: _site  # change to 'docs' if deploying to GitHub Pages
+  resources:
+      - last-build.json
 
 website:
   title: "Nguyễn Nhung"
