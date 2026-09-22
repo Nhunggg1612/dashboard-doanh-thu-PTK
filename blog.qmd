@@ -61,7 +61,7 @@ if (Sys.getenv("GCP_SERVICE_ACCOUNT") != "") {
 sheet_url <- "https://docs.google.com/spreadsheets/d/1WLxPG7Ef5pvjqrosb97hUovETDbYYvdopbwPelx2rvU/edit?gid=234198743#gid=234198743"
 b2c_aio <- read_sheet(sheet_url, sheet = "Chi tiết")
 
-b2c_aio1 <- b2c_aio[-c(1:4),c(1,2,3,10:21,25:28, 30:35, 37:38, 42:44,46,50,52:53,59,65,68,74,75,78,79,80,81,85,48)]
+b2c_aio1 <- b2c_aio[-c(1:4),c(1,2,3,10:21,25:28, 30:35, 37:38, 42:44,46,50,52:53,59,65,68,74,75,67,79,72,73,85,48)]
 n_aio <- c("don_huy", "ma_tinh", "ma_hd", "gtri", "namthang_ky", "ngay_ky", "dich_vu", "thang_DT", "ngay_ht" ,"ngay_tam_ung", "gtri_tam_ung", "loai_pin", "ma_pin", "ten_pin", "so_pin", "loai_inver", "ma_inver", "ten_inver", "so_inver", "ngay_cap_inver", "dambao_inver", "loai_acquy", "ma_acquy", "ten_acquy", "so_acquy", "ngay_cap_acquy", "dambao_acquy", "Ngay_KD_BG", "Ngay_KT_nhan", "Ngay_KT_tuchoi1", "Ngay_KT_tuchoin", "TTQH", "KV", "am","tyle_tamung" ,"thang_dk_DT", "chac_chan","cn_matbang", "cn_hanghoa", "cn_tiendo", "cn_thangdk", "cn_ngaybatdau", "cn_ngaythicongxong","time_ky","ngay_ky_bbnt")
 colnames(b2c_aio1) <- n_aio
 
@@ -133,6 +133,29 @@ b2c_aio1 <- b2c_aio1 %>%
   mutate(across(all_of(other_list_cols), ~ {
     sapply(., function(x) if (is.null(x) || length(x) == 0) NA else x[[1]])
   }))
+
+#Tháng bắt đầu TC - TC xong
+b2c_aio1 <- b2c_aio1 %>%
+  mutate(
+    thang_bd_tc = ifelse(
+      is.na(cn_ngaybatdau),
+      NA_character_,
+      format(
+        as.Date(cn_ngaybatdau, format = "%Y-%m-%d"),
+        format = "%m-%Y"
+      )
+    )
+  ) %>%
+  mutate(
+    thang_tc_xong = ifelse(
+      is.na(cn_thangdk),
+      NA_character_,
+      format(
+        as.Date(cn_ngaythicongxong, format = "%Y-%m-%d"),
+        format = "%m-%Y"
+      )
+    )
+  )
 
 
 ```
@@ -641,7 +664,12 @@ b2c_aio1 %>%
             xong_n_1 = sum(!is.na(ma_hd) & cn_ngaythicongxong == ngay_n_1, na.rm = TRUE),
             gtri_xong_n_1 = sum(gtri[!is.na(ma_hd)  & cn_ngaythicongxong == ngay_n_1], na.rm = TRUE)/10^6,
             dt_n_1 = sum(!is.na(ma_hd) & ngay_ht == ngay_n_1, na.rm = TRUE),
-            gtri_dt_n_1 = sum(gtri[!is.na(ma_hd)  & ngay_ht == ngay_n_1], na.rm = TRUE)/10^6
+            gtri_dt_n_1 = sum(gtri[!is.na(ma_hd)  & ngay_ht == ngay_n_1], na.rm = TRUE)/10^6,
+            
+            batdau_lk = sum(!is.na(ma_hd) & !is.na(cn_ngaybatdau) , na.rm = TRUE),
+            gtri_batdau_lk = sum(gtri[!is.na(ma_hd)  & !is.na(cn_ngaybatdau)], na.rm = TRUE)/10^6,
+            xong_lk = sum(!is.na(ma_hd) & !is.na(cn_ngaythicongxong), na.rm = TRUE),
+            gtri_xong_lk = sum(gtri[!is.na(ma_hd)  & !is.na(cn_ngaythicongxong)], na.rm = TRUE)/10^6
         ) -> bc_am_n
 
 ```
@@ -661,9 +689,13 @@ kq11x <- accounting(unlist(bc_am_n[c(1:nrow(bc_am_n)),11]), digits = 2L, format 
 kq12x <- accounting(unlist(bc_am_n[c(1:nrow(bc_am_n)),12]), digits = 2L, format = "d", big.mark = ",")
 kq13x <- accounting(unlist(bc_am_n[c(1:nrow(bc_am_n)),13]), digits = 2L, format = "d", big.mark = ",")
 kq14x <- accounting(unlist(bc_am_n[c(1:nrow(bc_am_n)),14]), digits = 2L, format = "d", big.mark = ",")
+kq15x <- accounting(unlist(bc_am_n[c(1:nrow(bc_am_n)),15]), digits = 2L, format = "d", big.mark = ",")
+kq16x <- accounting(unlist(bc_am_n[c(1:nrow(bc_am_n)),16]), digits = 2L, format = "d", big.mark = ",")
+kq17x <- accounting(unlist(bc_am_n[c(1:nrow(bc_am_n)),17]), digits = 2L, format = "d", big.mark = ",")
+kq18x <- accounting(unlist(bc_am_n[c(1:nrow(bc_am_n)),18]), digits = 2L, format = "d", big.mark = ",")
 
-bc_am_n_tb <- data.frame(kq1x,kq2x, kq3x, kq4x,kq5x,kq6x,kq7x,kq8x,kq9x, kq10x,kq11x,kq12x,kq13x,kq14x)
-bc_am_n_tb[3:14] <- lapply(bc_am_n_tb[3:14], as.numeric)
+bc_am_n_tb <- data.frame(kq1x,kq2x, kq3x, kq4x,kq5x,kq6x,kq7x,kq8x,kq9x, kq10x,kq11x,kq12x,kq13x,kq14x,kq15x, kq16x, kq17x, kq18x)
+bc_am_n_tb[3:18] <- lapply(bc_am_n_tb[3:18], as.numeric)
 rownames(bc_am_n_tb) <- NULL
 ```
 
@@ -680,18 +712,22 @@ shared_bc_am_n_tb <- SharedData$new(bc_am_n_tb)
 # Tên các colGroup (phải khớp chính xác, liền kề nhau) sẽ gộp thành "Tiến độ"
 nhom_hom_nay <- c("Tổng HĐ triển khai","Tổng HĐ TC xong", "Tổng HĐ lên DT")
 nhom_hom_qua <- c("Tổng HĐ triển khai_N-1","Tổng HĐ TC xong_N-1", "Tổng HĐ lên DT_N-1")
+nhom_luy_ke <- c("Tổng HĐ triển khai_LK","Tổng HĐ TC xong_LK")
 
 
-tbl <- reactable(shared_bc_am_n_tb, minRows = 3, width = 1450, height = "auto", pagination = FALSE, groupBy = "kq2x",
+tbl <- reactable(shared_bc_am_n_tb, minRows = 3, width = 1850, height = "auto", pagination = FALSE, groupBy = "kq2x",
           columnGroups = list(
             colGroup("Tổng HĐ triển khai", columns = c("kq3x", "kq4x"), sticky = "left", headerStyle = list(color = "black", background = "#9AFF9A", whiteSpace = "normal", textAlign = "center")),
             colGroup("Tổng HĐ TC xong", columns = c("kq5x", "kq6x"), sticky = "left", headerStyle = list(color = "black", background = "#9AFF9A", whiteSpace = "normal", textAlign = "center")),
             colGroup("Tổng HĐ lên DT", columns = c("kq7x","kq8x"), sticky = "left", headerStyle = list(color = "black", background = "#9AFF9A", whiteSpace = "normal", textAlign = "center")),
             
             
-            colGroup("Tổng HĐ triển khai_N-1", columns = c("kq9x", "kq10x"), sticky = "left", headerStyle = list(color = "black", background = "#00A6AD", whiteSpace = "normal", textAlign = "center")),
-            colGroup("Tổng HĐ TC xong_N-1", columns = c("kq11x","kq12x"), sticky = "left", headerStyle = list(color = "black", background = "#00A6AD", whiteSpace = "normal", textAlign = "center")),
-            colGroup("Tổng HĐ lên DT_N-1", columns = c("kq13x","kq14x"), sticky = "left", headerStyle = list(color = "black", background = "#00A6AD", whiteSpace = "normal", textAlign = "center"))
+            colGroup("Tổng HĐ triển khai_N-1", columns = c("kq9x", "kq10x"), sticky = "left", headerStyle = list(color = "black", background = "#6EC3C9", whiteSpace = "normal", textAlign = "center")),
+            colGroup("Tổng HĐ TC xong_N-1", columns = c("kq11x","kq12x"), sticky = "left", headerStyle = list(color = "black", background = "#6EC3C9", whiteSpace = "normal", textAlign = "center")),
+            colGroup("Tổng HĐ lên DT_N-1", columns = c("kq13x","kq14x"), sticky = "left", headerStyle = list(color = "black", background = "#6EC3C9", whiteSpace = "normal", textAlign = "center")),
+            
+            colGroup("Tổng HĐ triển khai_LK", columns = c("kq15x", "kq16x"), sticky = "left", headerStyle = list(color = "black", background = "#FFA54F", whiteSpace = "normal", textAlign = "center")),
+            colGroup("Tổng HĐ TC xong_LK", columns = c("kq17x","kq18x"), sticky = "left", headerStyle = list(color = "black", background = "#FFA54F", whiteSpace = "normal", textAlign = "center"))
           ),
           resizable = TRUE, wrap = FALSE, searchable = FALSE,
           bordered = TRUE, highlight = TRUE, style = list(fontSize = "16px"),
@@ -728,14 +764,19 @@ tbl <- reactable(shared_bc_am_n_tb, minRows = 3, width = 1450, height = "auto", 
             kq11x = colDef(name = "Số lượng",  headerStyle = list(color = "black", background = "#CAE5E8", whiteSpace = "normal", textAlign = "center"), aggregate = "sum", align = "right", width = 100, footer = function(values) sprintf("%.0f", sum(values))),
             kq12x = colDef(name = "Giá trị",   headerStyle = list(color = "black", background = "#CAE5E8", whiteSpace = "normal", textAlign = "center"), aggregate = "sum", align = "right", width = 100, format = colFormat(digits = 0, separators = TRUE), footer = function(values) formatC(sum(values), format = "f", digits = 0, big.mark = ",")),
             kq13x = colDef(name = "Số lượng",  headerStyle = list(color = "black", background = "#CAE5E8", whiteSpace = "normal", textAlign = "center"), aggregate = "sum", align = "right", width = 100, footer = function(values) sprintf("%.0f", sum(values))),
-            kq14x = colDef(name = "Giá trị",   headerStyle = list(color = "black", background = "#CAE5E8", whiteSpace = "normal", textAlign = "center"), aggregate = "sum", align = "right", width = 100, format = colFormat(digits = 0, separators = TRUE), footer = function(values) formatC(sum(values), format = "f", digits = 0, big.mark = ","))
+            kq14x = colDef(name = "Giá trị",   headerStyle = list(color = "black", background = "#CAE5E8", whiteSpace = "normal", textAlign = "center"), aggregate = "sum", align = "right", width = 100, format = colFormat(digits = 0, separators = TRUE), footer = function(values) formatC(sum(values), format = "f", digits = 0, big.mark = ",")),
+             kq15x = colDef(name = "Số lượng",  headerStyle = list(color = "black", background = "#FDE2CA", whiteSpace = "normal", textAlign = "center"), aggregate = "sum", align = "right", width = 100, footer = function(values) sprintf("%.0f", sum(values))),
+            kq16x = colDef(name = "Giá trị",   headerStyle = list(color = "black", background = "#FDE2CA", whiteSpace = "normal", textAlign = "center"), aggregate = "sum", align = "right", width = 100, format = colFormat(digits = 0, separators = TRUE), footer = function(values) formatC(sum(values), format = "f", digits = 0, big.mark = ",")),
+             kq17x = colDef(name = "Số lượng",  headerStyle = list(color = "black", background = "#FDE2CA", whiteSpace = "normal", textAlign = "center"), aggregate = "sum", align = "right", width = 100, footer = function(values) sprintf("%.0f", sum(values))),
+            kq18x = colDef(name = "Giá trị",   headerStyle = list(color = "black", background = "#FDE2CA", whiteSpace = "normal", textAlign = "center"), aggregate = "sum", align = "right", width = 100, format = colFormat(digits = 0, separators = TRUE), footer = function(values) formatC(sum(values), format = "f", digits = 0, big.mark = ","))
           )
         )
 
 # Khai báo các nhóm cần gộp (các colGroup trong mỗi nhóm phải liền kề nhau)
 cac_nhom <- list(
   list(nhom = nhom_hom_nay, ten = "Ngày hôm nay", mau = "#008B00"),
-  list(nhom = nhom_hom_qua, ten = "Ngày hôm qua", mau = "#008B8B")
+  list(nhom = nhom_hom_qua, ten = "Ngày hôm qua", mau = "#008B8B"),
+  list(nhom = nhom_luy_ke, ten = "Lũy kế", mau = "#945305")
 )
 
 tbl <- onRender(tbl, paste0("
