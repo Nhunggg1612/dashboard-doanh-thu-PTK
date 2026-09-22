@@ -23,23 +23,30 @@ format:
     include-after-body:
       - text: |
           <script>
-            const CHECK_INTERVAL = 60000; // kiểm tra mỗi 60 giây
-            
-            async function getLastBuild() {
-              const res = await fetch('/last-build.json?t=' + Date.now());
-              const data = await res.json();
-              return data.buildTime;
-            }
+            (function () {
+              var CHECK_INTERVAL = 60000; // kiểm tra mỗi 60 giây
 
-            (async () => {
-              const initialBuild = await getLastBuild();
-              
-              setInterval(async () => {
-                const currentBuild = await getLastBuild();
-                if (currentBuild !== initialBuild) {
-                  window.location.reload();
+              async function getLastBuild() {
+                try {
+                  var res = await fetch('/last-build.json?t=' + Date.now(), { cache: 'no-store' });
+                  if (!res.ok) return null;             // chưa có file -> bỏ qua, không báo lỗi
+                  var data = await res.json();
+                  return data.buildTime || null;
+                } catch (e) {
+                  return null;
                 }
-              }, CHECK_INTERVAL);
+              }
+
+              (async function () {
+                var initialBuild = await getLastBuild();
+                if (!initialBuild) return;              // không có file build -> tắt tự reload
+                setInterval(async function () {
+                  var currentBuild = await getLastBuild();
+                  if (currentBuild && currentBuild !== initialBuild) {
+                    window.location.reload();
+                  }
+                }, CHECK_INTERVAL);
+              })();
             })();
           </script>
     theme: cosmo
