@@ -177,6 +177,19 @@ ngay_n_1 <- as.Date(today() - 1, format = , format = "%Y-%m-%d")
 
 **Cập nhật dữ liệu lúc **<strong>`r now`</strong>
 
+```{=html}
+<div class="pdf-toolbar" style="display:flex; justify-content:flex-end; margin:4px 0 10px 0;">
+  <button id="btn-pdf" onclick="exportReportPDF(this)"
+          style="padding:7px 18px; background:#dc3545; color:#fff; border:none; border-radius:6px;
+                 cursor:pointer; font-size:14px; font-weight:600; font-family:'Segoe UI',Arial,sans-serif;">
+    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
+         stroke="currentColor" stroke-width="2" style="vertical-align:-3px; margin-right:5px">
+      <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/>
+      <line x1="12" y1="15" x2="12" y2="3"/></svg>Tải báo cáo PDF
+  </button>
+</div>
+```
+
 ## <span style="color: #C35817;font-family: cambria;">**II. DỰ KIẾN DOANH THU THÁNG ** <strong>`r thang_n`</strong></span>
 ### <span style="color: #C35817;font-family: cambria;">**1. Chi tiết theo tỉnh tiến độ HĐ dự kiến lên DT tháng ** <strong>`r thang_n`</strong></span>
 
