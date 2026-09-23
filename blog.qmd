@@ -202,6 +202,10 @@ ngay_n_1 <- as.Date(today() - 1, format = , format = "%Y-%m-%d")
     jspdf: [
       'https://cdn.jsdelivr.net/npm/jspdf@2.5.2/dist/jspdf.umd.min.js',
       'https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js'
+    ],
+    domtoimage: [
+      'https://cdnjs.cloudflare.com/ajax/libs/dom-to-image/2.6.0/dom-to-image.min.js',
+      'https://cdn.jsdelivr.net/npm/dom-to-image@2.6.0/dist/dom-to-image.min.js'
     ]
   };
 
@@ -234,6 +238,52 @@ ngay_n_1 <- as.Date(today() - 1, format = , format = "%Y-%m-%d")
     return (h && typeof h !== 'function') ? h.default : h;
   }
 
+  /* Bảng reactable dùng flexbox nên html2canvas dựng sai layout (mất dòng dữ liệu).
+     Với các khối có reactable, dùng dom-to-image - đúng thư viện mà nút "Tải PNG" đang dùng. */
+  function canvasFromDataUrl(dataUrl, w, h) {
+    return new Promise(function (resolve, reject) {
+      var img = new Image();
+      img.onload = function () {
+        var c = document.createElement('canvas');
+        c.width = w; c.height = h;
+        var ctx = c.getContext('2d');
+        ctx.fillStyle = '#ffffff'; ctx.fillRect(0, 0, w, h);
+        ctx.drawImage(img, 0, 0, w, h);
+        resolve(c);
+      };
+      img.onerror = function () { reject(new Error('Không dựng được ảnh bảng')); };
+      img.src = dataUrl;
+    });
+  }
+
+  async function captureBlock(el, h2c, SCALE) {
+    var w = el.scrollWidth, h = el.scrollHeight;
+
+    if (el.querySelector('.reactable') && window.domtoimage) {
+      var dataUrl = await window.domtoimage.toPng(el, {
+        quality: 1,
+        bgcolor: '#ffffff',
+        width:  w * SCALE,
+        height: h * SCALE,
+        style: {
+          transform: 'scale(' + SCALE + ')',   // phóng to để ảnh nét
+          transformOrigin: 'top left',
+          overflow: 'visible',
+          width:  w + 'px',
+          height: h + 'px'
+        },
+        filter: function (node) { return node.tagName !== 'BUTTON'; }   // bỏ nút Tải PNG
+      });
+      return await canvasFromDataUrl(dataUrl, w * SCALE, h * SCALE);
+    }
+
+    return await h2c(el, {
+      scale: SCALE, backgroundColor: '#ffffff', useCORS: true, logging: false,
+      width: w, height: h, scrollX: 0, scrollY: 0,
+      ignoreElements: function (n) { return n.tagName === 'BUTTON'; }
+    });
+  }
+
   /* Cắt 1 canvas thành nhiều trang nếu cao hơn phần còn lại của trang */
   function placeCanvas(pdf, canvas, wMM, hMM, y, M, CH) {
     var pxPerMM = canvas.height / hMM, offset = 0;
@@ -263,6 +313,8 @@ ngay_n_1 <- as.Date(today() - 1, format = , format = "%Y-%m-%d")
     try {
       await loadFirst(LIBS.html2canvas, function () { return typeof getH2C() === 'function'; });
       await loadFirst(LIBS.jspdf,       function () { return !!(window.jspdf && window.jspdf.jsPDF); });
+      try { await loadFirst(LIBS.domtoimage, function () { return !!window.domtoimage; }); }
+      catch (e) { console.warn('[PDF] Không có dom-to-image, bảng sẽ chụp bằng html2canvas'); }
       var h2c = getH2C();
 
       var main = document.querySelector('#quarto-document-content') ||
@@ -286,12 +338,7 @@ ngay_n_1 <- as.Date(today() - 1, format = , format = "%Y-%m-%d")
       for (var i = 0; i < blocks.length; i++) {
         btn.innerText = '⏳ Đang xuất ' + (i + 1) + '/' + blocks.length + '...';
         var el = blocks[i];
-        var canvas = await h2c(el, {
-          scale: SCALE, backgroundColor: '#ffffff', useCORS: true, logging: false,
-          width: el.scrollWidth, height: el.scrollHeight,
-          scrollX: 0, scrollY: 0,
-          ignoreElements: function (n) { return n.tagName === 'BUTTON'; }
-        });
+        var canvas = await captureBlock(el, h2c, SCALE);
         if (!canvas.width || !canvas.height) continue;
         var wMM = canvas.width / SCALE * k, hMM = canvas.height / SCALE * k;
 
