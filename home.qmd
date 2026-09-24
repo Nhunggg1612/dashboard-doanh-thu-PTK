@@ -887,7 +887,7 @@ tagList(
 shiny::fluidRow(
   shiny::column(
     9,
-    reactable(shared_bc_tiendo_cnct_tb, minRows = 3,width = 1260, height = "auto", pagination = FALSE, groupBy = "kq2x", 
+    reactable(shared_bc_tiendo_cnct_tb, minRows = 3,width = 1460, height = "auto", pagination = FALSE, groupBy = "kq2x", 
               columnGroups = list(
     colGroup("Tổng tồn", columns = c("kq3x", "kq4x"), sticky = "left", headerStyle = list(color = "white", background = "#F56222", whiteSpace = "normal",textAlign = "center")),
         colGroup("Doanh thu", columns = c("kq5x", "kq6x"), sticky = "left", headerStyle = list(color = "white", background = "#F56222", whiteSpace = "normal",textAlign = "center")),
