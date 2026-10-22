@@ -66,7 +66,7 @@ n_aio <- c("don_huy", "ma_tinh", "ma_hd", "gtri", "namthang_ky", "ngay_ky", "dic
 colnames(b2c_aio1) <- n_aio
 
 b2c_aio1 %>%
-  filter(!don_huy %in% c("Đề xuất hủy", "Hết hiệu lực")) -> b2c_aio1
+  filter(!don_huy %in% c("Đề xuất hủy", "Đã chấm dứt hợp đồng")) -> b2c_aio1
 
 #Chuyển các cột list định dạng giống ngày về date %m-%Y
 b2c_aio1 <- b2c_aio1 %>%
@@ -1280,7 +1280,7 @@ tagList(
 #### <span style="color: #C35817;font-family: cambria;">**2.1. Hiện trạng HĐ tồn và dự kiến DT**</span>
 ```{r, warning=FALSE, message=FALSE, results = 'hide', echo = FALSE}
 b2c_aio1 %>%
-  filter(!don_huy %in% c("Đề xuất hủy", "Hết hiệu lực")) %>%
+  filter(!don_huy %in% c("Đề xuất hủy", "Đã chấm dứt hợp đồng")) %>%
   group_by(ma_tinh, am) %>%
   summarise(so_ton = sum(!is.na(ma_hd)),
             gtri_ton = sum(gtri[!is.na(ma_hd)], na.rm = TRUE)/10^6,
@@ -1302,7 +1302,7 @@ b2c_aio1 %>%
             ) -> bc_dambao_cnct
 
 b2c_aio1 %>%
-  filter(!don_huy %in% c("Đề xuất hủy", "Hết hiệu lực")) %>%
+  filter(!don_huy %in% c("Đề xuất hủy", "Đã chấm dứt hợp đồng")) %>%
   group_by(ma_tinh, am) %>%
   summarise(so_dk_am = sum(!is.na(ma_hd) & thang_dk_DT == thang_n, na.rm = TRUE),
             gtri_dk_am = round(sum(gtri[!is.na(ma_hd) & thang_dk_DT == thang_n], na.rm = TRUE)/10^6,0),
@@ -2159,23 +2159,25 @@ tagList(
 ### <span style="color: #C35817;font-family: cambria;">**3. KPI AM cần điều hành** </span>
 #### <span style="color: #C35817;font-family: cambria;">**3.1. KPI ký BBBG HĐ đủ điều kiện (HĐ ký từ T4/2026 trở đi)**</span>
 
+<span style="color: #FF0000;font-family: cambria;">**_Mặt bằng lấy theo dữ liệu CNCT điền_**
+
 ```{r, warning=FALSE, message=FALSE, results = 'hide', echo = FALSE}
 b2c_aio1 %>%
-  filter(!don_huy %in% c("Đề xuất hủy", "Hết hiệu lực")) %>%
+  filter(!don_huy %in% c("Đề xuất hủy", "Đã chấm dứt hợp đồng")) %>%
   filter(time_ky == "Ký sau T04/2026") %>%
   group_by(ma_tinh, am) %>%
-  summarise(so_du_dk = sum(!is.na(ma_hd) & dich_vu  %in% "Dịch vụ" & tyle_tamung >= 0.2 & cn_matbang  %in% "Đã đảm bảo MB" & cn_hanghoa  %in% "Đã đủ vật tư"),
-            gtri_du_dk = sum(gtri[!is.na(ma_hd) & dich_vu == "Dịch vụ" & tyle_tamung >= 0.2 & cn_matbang == "Đã đảm bảo MB" & cn_hanghoa == "Đã đủ vật tư"], na.rm = TRUE)/10^6,
-            so_chua_BG = sum(!is.na(ma_hd) & dich_vu  %in% "Dịch vụ" & tyle_tamung >= 0.2 & cn_matbang  %in% "Đã đảm bảo MB" & cn_hanghoa  %in% "Đã đủ vật tư" & Ngay_KD_BG == "NULL"),
-            gtri_chua_BG = sum(gtri[!is.na(ma_hd) & dich_vu == "Dịch vụ" & tyle_tamung >= 0.2 & cn_matbang == "Đã đảm bảo MB" & cn_hanghoa == "Đã đủ vật tư"  & Ngay_KD_BG == "NULL"], na.rm = TRUE)/10^6,
-            so_da_BG = sum(!is.na(ma_hd) & dich_vu  %in% "Dịch vụ" & tyle_tamung >= 0.2 & cn_matbang  %in% "Đã đảm bảo MB" & cn_hanghoa  %in% "Đã đủ vật tư" & Ngay_KD_BG != "NULL"),
-            gtri_da_BG = sum(gtri[!is.na(ma_hd) & dich_vu == "Dịch vụ" & tyle_tamung >= 0.2 & cn_matbang == "Đã đảm bảo MB" & cn_hanghoa == "Đã đủ vật tư"  & Ngay_KD_BG != "NULL"], na.rm = TRUE)/10^6,
-            so_da_ky = sum(!is.na(ma_hd) & dich_vu  %in% "Dịch vụ" & tyle_tamung >= 0.2 & cn_matbang  %in% "Đã đảm bảo MB" & cn_hanghoa  %in% "Đã đủ vật tư" & Ngay_KD_BG != "NULL" & Ngay_KT_nhan != "NULL"),
-            gtri_da_ky = sum(gtri[!is.na(ma_hd) & dich_vu == "Dịch vụ" & tyle_tamung >= 0.2 & cn_matbang == "Đã đảm bảo MB" & cn_hanghoa == "Đã đủ vật tư"  & Ngay_KD_BG != "NULL" & Ngay_KT_nhan != "NULL"], na.rm = TRUE)/10^6,
-            so_da_tuchoi = sum(!is.na(ma_hd) & dich_vu  %in% "Dịch vụ" & tyle_tamung >= 0.2 & cn_matbang  %in% "Đã đảm bảo MB" & cn_hanghoa  %in% "Đã đủ vật tư" & Ngay_KD_BG != "NULL" & Ngay_KT_nhan == "NULL" & Ngay_KT_tuchoi1 != "NULL"),
-            gtri_da_tuchoi = sum(gtri[!is.na(ma_hd) & dich_vu == "Dịch vụ" & tyle_tamung >= 0.2 & cn_matbang == "Đã đảm bảo MB" & cn_hanghoa == "Đã đủ vật tư"  & Ngay_KD_BG != "NULL" & Ngay_KT_nhan == "NULL" & Ngay_KT_tuchoi1 != "NULL"], na.rm = TRUE)/10^6,
-            so_da_chuaky = sum(!is.na(ma_hd) & dich_vu  %in% "Dịch vụ" & tyle_tamung >= 0.2 & cn_matbang  %in% "Đã đảm bảo MB" & cn_hanghoa  %in% "Đã đủ vật tư" & Ngay_KD_BG != "NULL" & Ngay_KT_nhan == "NULL" & Ngay_KT_tuchoi1 == "NULL"),
-            gtri_da_chuaky = sum(gtri[!is.na(ma_hd) & dich_vu == "Dịch vụ" & tyle_tamung >= 0.2 & cn_matbang == "Đã đảm bảo MB" & cn_hanghoa == "Đã đủ vật tư"  & Ngay_KD_BG != "NULL" & Ngay_KT_nhan == "NULL" & Ngay_KT_tuchoi1 == "NULL"], na.rm = TRUE)/10^6
+  summarise(so_du_dk = sum(!is.na(ma_hd) & dich_vu  %in% "Dịch vụ" & tyle_tamung >= 0.2 & cn_matbang  %in% "Đã đảm bảo MB"),
+            gtri_du_dk = sum(gtri[!is.na(ma_hd) & dich_vu == "Dịch vụ" & tyle_tamung >= 0.2 & cn_matbang == "Đã đảm bảo MB"], na.rm = TRUE)/10^6,
+            so_chua_BG = sum(!is.na(ma_hd) & dich_vu  %in% "Dịch vụ" & tyle_tamung >= 0.2 & cn_matbang  %in% "Đã đảm bảo MB" & Ngay_KD_BG == "NULL"),
+            gtri_chua_BG = sum(gtri[!is.na(ma_hd) & dich_vu == "Dịch vụ" & tyle_tamung >= 0.2 & cn_matbang == "Đã đảm bảo MB"  & Ngay_KD_BG == "NULL"], na.rm = TRUE)/10^6,
+            so_da_BG = sum(!is.na(ma_hd) & dich_vu  %in% "Dịch vụ" & tyle_tamung >= 0.2 & cn_matbang  %in% "Đã đảm bảo MB"  & Ngay_KD_BG != "NULL"),
+            gtri_da_BG = sum(gtri[!is.na(ma_hd) & dich_vu == "Dịch vụ" & tyle_tamung >= 0.2 & cn_matbang == "Đã đảm bảo MB" & Ngay_KD_BG != "NULL"], na.rm = TRUE)/10^6,
+            so_da_ky = sum(!is.na(ma_hd) & dich_vu  %in% "Dịch vụ" & tyle_tamung >= 0.2 & cn_matbang  %in% "Đã đảm bảo MB"  & Ngay_KD_BG != "NULL" & Ngay_KT_nhan != "NULL"),
+            gtri_da_ky = sum(gtri[!is.na(ma_hd) & dich_vu == "Dịch vụ" & tyle_tamung >= 0.2 & cn_matbang == "Đã đảm bảo MB"  & Ngay_KD_BG != "NULL" & Ngay_KT_nhan != "NULL"], na.rm = TRUE)/10^6,
+            so_da_tuchoi = sum(!is.na(ma_hd) & dich_vu  %in% "Dịch vụ" & tyle_tamung >= 0.2 & cn_matbang  %in% "Đã đảm bảo MB" & Ngay_KD_BG != "NULL" & Ngay_KT_nhan == "NULL" & Ngay_KT_tuchoi1 != "NULL"),
+            gtri_da_tuchoi = sum(gtri[!is.na(ma_hd) & dich_vu == "Dịch vụ" & tyle_tamung >= 0.2 & cn_matbang == "Đã đảm bảo MB"  & Ngay_KD_BG != "NULL" & Ngay_KT_nhan == "NULL" & Ngay_KT_tuchoi1 != "NULL"], na.rm = TRUE)/10^6,
+            so_da_chuaky = sum(!is.na(ma_hd) & dich_vu  %in% "Dịch vụ" & tyle_tamung >= 0.2 & cn_matbang  %in% "Đã đảm bảo MB" & Ngay_KD_BG != "NULL" & Ngay_KT_nhan == "NULL" & Ngay_KT_tuchoi1 == "NULL"),
+            gtri_da_chuaky = sum(gtri[!is.na(ma_hd) & dich_vu == "Dịch vụ" & tyle_tamung >= 0.2 & cn_matbang == "Đã đảm bảo MB"  & Ngay_KD_BG != "NULL" & Ngay_KT_nhan == "NULL" & Ngay_KT_tuchoi1 == "NULL"], na.rm = TRUE)/10^6
             ) -> bc_ky_bbbg
 
 
@@ -2229,12 +2231,12 @@ shiny::fluidRow(
     9,
     reactable(shared_bc_ky_bbbg_tb, minRows = 3,width = 1470, height = "auto", pagination = FALSE, groupBy = "kq2x", 
               columnGroups = list(
-    colGroup("Tổng HĐ đủ TƯ + VT + MB", columns = c("kq3x", "kq4x"), sticky = "left", headerStyle = list(color = "white", background = "#F56222", whiteSpace = "normal",textAlign = "center")),
+    colGroup("Tổng HĐ đủ TƯ + MB", columns = c("kq3x", "kq4x"), sticky = "left", headerStyle = list(color = "white", background = "#F56222", whiteSpace = "normal",textAlign = "center")),
     colGroup("GĐKD chưa ký BG", columns = c("kq5x", "kq6x"), sticky = "left", headerStyle = list(color = "white", background = "#F56222", whiteSpace = "normal",textAlign = "center")),
     colGroup("GĐKD đã ký BG", columns = c("kq7x", "kq8x"), sticky = "left", headerStyle = list(color = "white", background = "#F56222", whiteSpace = "normal",textAlign = "center")),
-     colGroup("GĐKT đã ký nhận", columns = c("kq9x", "kq10x"), sticky = "left", headerStyle = list(color = "white", background = "#3333CC", whiteSpace = "normal",textAlign = "center")),
-     colGroup("GĐKT đã từ chối", columns = c( "kq11x", "kq12x"), sticky = "left", headerStyle = list(color = "white", background = "#3333CC", whiteSpace = "normal",textAlign = "center")),
-    colGroup("GĐKT chưa ký nhận", columns = c( "kq13x", "kq14x" ), sticky = "left", headerStyle = list(color = "white", background = "#3333CC", whiteSpace = "normal",textAlign = "center"))
+     colGroup("CHT đã ký nhận", columns = c("kq9x", "kq10x"), sticky = "left", headerStyle = list(color = "white", background = "#3333CC", whiteSpace = "normal",textAlign = "center")),
+     colGroup("CHT đã từ chối", columns = c( "kq11x", "kq12x"), sticky = "left", headerStyle = list(color = "white", background = "#3333CC", whiteSpace = "normal",textAlign = "center")),
+    colGroup("CHT chưa ký nhận", columns = c( "kq13x", "kq14x" ), sticky = "left", headerStyle = list(color = "white", background = "#3333CC", whiteSpace = "normal",textAlign = "center"))
   ),
   resizable = TRUE,
   wrap = FALSE,
