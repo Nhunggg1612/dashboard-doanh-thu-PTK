@@ -9,6 +9,11 @@ on:
     - cron: '0 10 * * *'  # 5:00 chiều
   workflow_dispatch:
 
+# Không cho 2 lượt chạy chồng nhau (bấm Run nhiều lần / trùng giờ lịch)
+concurrency:
+  group: deploy-netlify
+  cancel-in-progress: false
+
 jobs:
   deploy:
     runs-on: ubuntu-latest
@@ -63,6 +68,7 @@ jobs:
         uses: nwtgck/actions-netlify@v3
         with:
           publish-dir: '_site'
+          functions-dir: 'netlify/functions'   # deploy kèm function cho nút Run
           production-branch: main
           production-deploy: true
           github-token: ${{ secrets.GITHUB_TOKEN }}

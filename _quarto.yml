@@ -24,31 +24,120 @@ format:
   html:
     include-after-body:
       - text: |
+          <style>
+            #run-box { display:flex; align-items:center; gap:10px; margin-left:auto; font-family:'Segoe UI',Arial,sans-serif; }
+            #run-time { color:#cbd5e1; font-size:13px; white-space:nowrap; }
+            #btn-run { padding:6px 16px; background:#16a34a; color:#fff; border:none; border-radius:8px;
+                       font-weight:600; font-size:14px; cursor:pointer; white-space:nowrap; }
+            #btn-run:disabled { background:#64748b; cursor:wait; }
+            @media print { #run-box { display:none !important; } }
+          </style>
           <script>
             (function () {
-              var CHECK_INTERVAL = 60000; // kiểm tra mỗi 60 giây
+              var FN = '/.netlify/functions/run-build';
+              var CHECK_INTERVAL = 60000;   // bình thường: kiểm tra 60s/lần
+              var FAST_INTERVAL  = 15000;   // khi đang chạy: 15s/lần
+              var initialBuild = null, timer = null, timerMs = 0;
 
+              /* ---------- Đọc giờ build gần nhất ---------- */
               async function getLastBuild() {
                 try {
                   var res = await fetch('/last-build.json?t=' + Date.now(), { cache: 'no-store' });
-                  if (!res.ok) return null;             // chưa có file -> bỏ qua, không báo lỗi
+                  if (!res.ok) return null;
                   var data = await res.json();
                   return data.buildTime || null;
+                } catch (e) { return null; }
+              }
+              function fmtVN(iso) {
+                var d = new Date(iso);
+                if (isNaN(d)) return iso;
+                return d.toLocaleString('vi-VN', { timeZone: 'Asia/Ho_Chi_Minh', hour12: false });
+              }
+
+              /* ---------- Gắn nút vào navbar ---------- */
+              function mountButton() {
+                var nav = document.querySelector('#navbarCollapse') || document.querySelector('nav.navbar .container-fluid');
+                if (!nav || document.getElementById('run-box')) return;
+                var box = document.createElement('div');
+                box.id = 'run-box';
+                box.innerHTML = '<span id="run-time">Cập nhật: …</span>' +
+                                '<button id="btn-run" type="button">▶ Run</button>';
+                nav.appendChild(box);
+                document.getElementById('btn-run').addEventListener('click', runNow);
+              }
+              function setBusy(busy, text) {
+                var b = document.getElementById('btn-run');
+                if (!b) return;
+                b.disabled = busy;
+                b.textContent = text || (busy ? '⏳ Đang chạy...' : '▶ Run');
+              }
+              function showTime(iso) {
+                var el = document.getElementById('run-time');
+                if (el) el.textContent = 'Cập nhật: ' + (iso ? fmtVN(iso) : '—');
+              }
+
+              /* ---------- Bấm Run ---------- */
+              async function runNow() {
+                if (!confirm('Chạy lại dữ liệu từ Google Sheets? (mất khoảng 3-6 phút)')) return;
+                var body = {};
+                var key = localStorage.getItem('run_key');
+                setBusy(true, '⏳ Đang gửi lệnh...');
+                try {
+                  var res = await fetch(FN, { method: 'POST', headers: { 'Content-Type': 'application/json' },
+                                              body: JSON.stringify({ key: key || '' }) });
+                  if (res.status === 401) {               // site có đặt RUN_KEY -> hỏi mã
+                    key = prompt('Nhập mã chạy:');
+                    if (!key) { setBusy(false); return; }
+                    res = await fetch(FN, { method: 'POST', headers: { 'Content-Type': 'application/json' },
+                                            body: JSON.stringify({ key: key }) });
+                    if (res.ok) localStorage.setItem('run_key', key);
+                  }
+                  var data = await res.json().catch(function () { return {}; });
+                  if (!res.ok) throw new Error(data.error || ('Lỗi ' + res.status));
+                  setBusy(true);
+                  startPolling(FAST_INTERVAL);
                 } catch (e) {
-                  return null;
+                  alert('Không chạy được: ' + e.message);
+                  setBusy(false);
                 }
               }
 
-              (async function () {
-                var initialBuild = await getLastBuild();
-                if (!initialBuild) return;              // không có file build -> tắt tự reload
-                setInterval(async function () {
-                  var currentBuild = await getLastBuild();
-                  if (currentBuild && currentBuild !== initialBuild) {
-                    window.location.reload();
+              /* ---------- Theo dõi: khi build mới xong thì tải lại trang ---------- */
+              async function tick() {
+                var current = await getLastBuild();
+                if (current && initialBuild && current !== initialBuild) {
+                  window.location.reload();
+                  return;
+                }
+                try {
+                  var r = await fetch(FN, { cache: 'no-store' });
+                  if (r.ok) {
+                    var s = await r.json();
+                    if (s.status && s.status !== 'completed') {
+                      setBusy(true);
+                      startPolling(FAST_INTERVAL);
+                    } else {
+                      if (s.conclusion === 'failure') setBusy(false, '⚠ Lần chạy trước lỗi - Run lại');
+                      else setBusy(false);
+                      startPolling(CHECK_INTERVAL);
+                    }
                   }
-                }, CHECK_INTERVAL);
-              })();
+                } catch (e) { /* chạy local không có function -> bỏ qua */ }
+              }
+              function startPolling(ms) {
+                if (timer && timerMs === ms) return;
+                clearInterval(timer);
+                timer = setInterval(tick, ms);
+                timerMs = ms;
+              }
+
+              document.addEventListener('DOMContentLoaded', async function () {
+                mountButton();
+                initialBuild = await getLastBuild();
+                showTime(initialBuild);
+                tick();
+                startPolling(CHECK_INTERVAL);
+              });
             })();
           </script>
     theme: cosmo
