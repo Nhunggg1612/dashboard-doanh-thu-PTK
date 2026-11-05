@@ -3,11 +3,11 @@ name: Deploy Quarto to Netlify
 on:
   push:
     branches: [main]
-    schedule:
-    - cron: '0 2 * * *'  # Chạy lúc 8:00 sáng giờ Việt Nam mỗi ngày
+  schedule:
+    - cron: '0 1 * * *'   # 8:00 sáng giờ VN
     - cron: '0 7 * * *'   # 2:00 chiều
     - cron: '0 10 * * *'  # 5:00 chiều
-    workflow_dispatch:
+  workflow_dispatch:
 
 jobs:
   deploy:
@@ -27,61 +27,35 @@ jobs:
         run: |
           sudo apt-get update
           sudo apt-get install -y \
-            libcurl4-openssl-dev \
-            libssl-dev \
-            libxml2-dev \
-            libfontconfig1-dev \
-            libharfbuzz-dev \
-            libfribidi-dev \
-            libfreetype6-dev \
-            libpng-dev \
-            libtiff5-dev \
-            libjpeg-dev \
-            libgdal-dev \
-            libgeos-dev \
-            libproj-dev \
-            libgit2-dev
+            libcurl4-openssl-dev libssl-dev libxml2-dev \
+            libfontconfig1-dev libharfbuzz-dev libfribidi-dev \
+            libfreetype6-dev libpng-dev libtiff5-dev libjpeg-dev \
+            libgdal-dev libgeos-dev libproj-dev libgit2-dev
 
       - name: Cache R packages
-        uses: actions/cache@v3
+        id: cache-r
+        uses: actions/cache@v4
         with:
           path: ${{ env.R_LIBS_USER }}
-          key: ${{ runner.os }}-r-4.4.0-fresh
-          restore-keys: ${{ runner.os }}-r-4.4.0-
+          key: ${{ runner.os }}-r-4.4.0-v1
 
       - name: Install R packages
         if: steps.cache-r.outputs.cache-hit != 'true'
         run: |
           install.packages("pak", repos = "https://r-lib.github.io/p/pak/stable/")
           pak::pak(c(
-            "dplyr",
-            "tidyr",
-            "tidyverse",
-            "stringr",
-            "stringi",
-            "ggplot2",
-            "ggthemes",
-            "ggiraph",
-            "highcharter",
-            "formattable",
-            "scales",
-            "crosstalk",
-            "reactable",
-            "DT",
-            "repr",
-            "raster",
-            "googlesheets4",
-            "shiny",
-            "shinydashboard",
-            "shinyWidgets",
-            "jsonlite",
-            "htmlwidgets",
-            "htmltools"
+            "dplyr", "tidyr", "tidyverse", "stringr", "stringi",
+            "ggplot2", "ggthemes", "ggiraph", "highcharter", "formattable",
+            "scales", "crosstalk", "reactable", "DT", "repr", "raster",
+            "googlesheets4", "shiny", "shinydashboard", "shinyWidgets",
+            "jsonlite", "htmlwidgets", "htmltools"
           ))
         shell: Rscript {0}
 
-      - name: Render Quarto
-        run: quarto render
+      - name: Render Quarto (luôn chạy lại code để lấy dữ liệu mới)
+        run: |
+          rm -rf _freeze _site
+          quarto render
         env:
           GCP_SERVICE_ACCOUNT: ${{ secrets.GCP_SERVICE_ACCOUNT }}
 
@@ -90,6 +64,7 @@ jobs:
         with:
           publish-dir: '_site'
           production-branch: main
+          production-deploy: true
           github-token: ${{ secrets.GITHUB_TOKEN }}
           deploy-message: "Deploy from GitHub Actions"
         env:
