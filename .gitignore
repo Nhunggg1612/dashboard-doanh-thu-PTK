@@ -4,3 +4,4 @@ _site/
 *.RData
 .Rprofile
 /.quarto/
+.secrets
