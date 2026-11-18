@@ -16,45 +16,51 @@ concurrency:
 
 jobs:
   deploy:
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-latest
+    # Chạy trong image có sẵn R 4.4.0 -> bỏ hẳn bước "Setup R" (cài R mất ~4-5 phút)
+    container: rocker/r-ver:4.4.0
+
+    env:
+      # Gói R dạng binary (cài nhanh, không phải biên dịch)
+      CRAN_REPO: https://p3m.dev/cran/__linux__/jammy/latest
+      QUARTO_VERSION: 1.7.32
+
     steps:
       - uses: actions/checkout@v4
 
-      - name: Setup R
-        uses: r-lib/actions/setup-r@v2
-        with:
-          r-version: '4.4.0'
-
-      - name: Setup Quarto
-        uses: quarto-dev/quarto-actions/setup@v2
-
-      - name: Install system dependencies
+      - name: Cài công cụ cơ bản + Quarto
         run: |
-          sudo apt-get update
-          sudo apt-get install -y \
-            libcurl4-openssl-dev libssl-dev libxml2-dev \
-            libfontconfig1-dev libharfbuzz-dev libfribidi-dev \
-            libfreetype6-dev libpng-dev libtiff5-dev libjpeg-dev \
-            libgdal-dev libgeos-dev libproj-dev libgit2-dev
+          apt-get update -qq
+          apt-get install -y -qq --no-install-recommends curl ca-certificates
+          curl -fsSL -o /tmp/quarto.deb \
+            "https://github.com/quarto-dev/quarto-cli/releases/download/v${QUARTO_VERSION}/quarto-${QUARTO_VERSION}-linux-amd64.deb"
+          dpkg -i /tmp/quarto.deb
+          quarto --version
+          echo "options(repos = c(CRAN = '${CRAN_REPO}'))" >> /usr/local/lib/R/etc/Rprofile.site
 
       - name: Cache R packages
         id: cache-r
         uses: actions/cache@v4
         with:
-          path: ${{ env.R_LIBS_USER }}
-          key: ${{ runner.os }}-r-4.4.0-v1
+          path: /usr/local/lib/R/site-library
+          key: rocker-4.4.0-pkgs-${{ hashFiles('.github/workflows/deploy.yml') }}
 
-      - name: Install R packages
+      - name: Cài R packages (chỉ khi chưa có cache)
         if: steps.cache-r.outputs.cache-hit != 'true'
         run: |
-          install.packages("pak", repos = "https://r-lib.github.io/p/pak/stable/")
+          install.packages("pak")
           pak::pak(c(
-            "dplyr", "tidyr", "tidyverse", "stringr", "stringi",
-            "ggplot2", "ggthemes", "ggiraph", "highcharter", "formattable",
-            "scales", "crosstalk", "reactable", "DT", "repr", "raster",
-            "googlesheets4", "shiny", "shinydashboard", "shinyWidgets",
+            "rmarkdown", "knitr",
+            "dplyr", "tidyr", "tidyverse", "stringr", "scales",
+            "highcharter", "formattable", "crosstalk", "reactable",
+            "googlesheets4", "shiny",
             "jsonlite", "htmlwidgets", "htmltools"
           ))
+        shell: Rscript {0}
+
+      - name: Cài thư viện hệ thống cho các gói R (khi dùng cache)
+        if: steps.cache-r.outputs.cache-hit == 'true'
+        run: pak::sysreqs_fix_installed()
         shell: Rscript {0}
 
       - name: Render Quarto (luôn chạy lại code để lấy dữ liệu mới)

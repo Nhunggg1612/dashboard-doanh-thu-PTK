@@ -22,7 +22,6 @@ date: '`r format(Sys.Date(), "%d/%m/%Y")`'
 </style>
 
 ```{r, warning=FALSE, message=FALSE, results = 'hide', echo = FALSE}
-#library(plyr)
 library(dplyr)
 library(ggplot2)
 library(repr)
@@ -30,7 +29,6 @@ library(dplyr)
 library(DT)
 library(highcharter)
 library(shiny)
-#library(shinydashboard)
 library(tidyr)
 library(stringr)
 library(dplyr)
@@ -40,13 +38,7 @@ library(scales)
 library(crosstalk)
 library(reactable)
 library(stringi)
-library(raster)
-#library(rgdal)
-library(ggthemes)
-library(ggiraph)
 library(googlesheets4)
-library(shinydashboard)
-library(shinyWidgets)
 
 ```
 
