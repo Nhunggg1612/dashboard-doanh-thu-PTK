@@ -17,23 +17,29 @@ concurrency:
 jobs:
   deploy:
     runs-on: ubuntu-latest
-    # Chạy trong image có sẵn R 4.4.0 -> bỏ hẳn bước "Setup R" (cài R mất ~4-5 phút)
-    container: rocker/r-ver:4.4.0
+    timeout-minutes: 30   # quá 30 phút thì tự dừng, không treo mãi
+    # Image có sẵn R 4.4.0 + tidyverse + các thư viện hệ thống đi kèm
+    # -> không phải cài R, không phải apt-get hàng trăm gói mỗi lần chạy
+    container: rocker/tidyverse:4.4.0
 
     env:
       # Gói R dạng binary (cài nhanh, không phải biên dịch)
       CRAN_REPO: https://p3m.dev/cran/__linux__/jammy/latest
       QUARTO_VERSION: 1.7.32
+      PKG_SYSREQS: "false"   # không cho pak tự apt-get cài hàng trăm gói -dev
 
     steps:
       - uses: actions/checkout@v4
 
-      - name: Cài công cụ cơ bản + Quarto
+      - name: Cài Quarto (tải bằng R, không cần apt-get)
+        timeout-minutes: 5
         run: |
-          apt-get update -qq
-          apt-get install -y -qq --no-install-recommends curl ca-certificates
-          curl -fsSL -o /tmp/quarto.deb \
-            "https://github.com/quarto-dev/quarto-cli/releases/download/v${QUARTO_VERSION}/quarto-${QUARTO_VERSION}-linux-amd64.deb"
+          # Đổi kho Ubuntu sang mirror của Azure (nhanh, ổn định hơn archive.ubuntu.com)
+          # -> dùng cho bước apt nhỏ phía sau
+          sed -i 's|http://archive.ubuntu.com|http://azure.archive.ubuntu.com|g; s|http://security.ubuntu.com|http://azure.archive.ubuntu.com|g' /etc/apt/sources.list || true
+          echo 'Acquire::Retries "3"; Acquire::http::Timeout "30";' > /etc/apt/apt.conf.d/99retry
+
+          Rscript -e "options(timeout = 300); download.file('https://github.com/quarto-dev/quarto-cli/releases/download/v${QUARTO_VERSION}/quarto-${QUARTO_VERSION}-linux-amd64.deb', '/tmp/quarto.deb', mode = 'wb')"
           dpkg -i /tmp/quarto.deb
           quarto --version
           echo "options(repos = c(CRAN = '${CRAN_REPO}'))" >> /usr/local/lib/R/etc/Rprofile.site
@@ -43,24 +49,23 @@ jobs:
         uses: actions/cache@v4
         with:
           path: /usr/local/lib/R/site-library
-          key: rocker-4.4.0-pkgs-${{ hashFiles('.github/workflows/deploy.yml') }}
+          key: tidyverse-4.4.0-pkgs-${{ hashFiles('.github/workflows/deploy.yml') }}
+
+      - name: Thư viện hệ thống cho igraph (highcharter cần)
+        timeout-minutes: 5
+        run: |
+          apt-get update -qq
+          apt-get install -y -qq --no-install-recommends libglpk40 libgmp10
 
       - name: Cài R packages (chỉ khi chưa có cache)
+        timeout-minutes: 15
         if: steps.cache-r.outputs.cache-hit != 'true'
         run: |
           install.packages("pak")
           pak::pak(c(
-            "rmarkdown", "knitr",
-            "dplyr", "tidyr", "tidyverse", "stringr", "scales",
             "highcharter", "formattable", "crosstalk", "reactable",
-            "googlesheets4", "shiny",
-            "jsonlite", "htmlwidgets", "htmltools"
+            "googlesheets4", "shiny", "htmlwidgets", "htmltools"
           ))
-        shell: Rscript {0}
-
-      - name: Cài thư viện hệ thống cho các gói R (khi dùng cache)
-        if: steps.cache-r.outputs.cache-hit == 'true'
-        run: pak::sysreqs_fix_installed()
         shell: Rscript {0}
 
       - name: Render Quarto (luôn chạy lại code để lấy dữ liệu mới)
